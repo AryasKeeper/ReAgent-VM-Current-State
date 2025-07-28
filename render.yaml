@@ -1,0 +1,135 @@
+# Render Blueprint for ReAgent Sydney
+services:
+  # FastAPI Backend
+  - type: web
+    name: reagent-api
+    env: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn src.api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: DATABASE_URL
+        fromDatabase:
+          name: reagent-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: reagent-redis
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: DOMAIN_API_KEY
+        sync: false
+      - key: REA_API_KEY
+        sync: false
+      - key: CORELOGIC_API_KEY
+        sync: false
+      - key: NSW_LPI_API_KEY
+        sync: false
+      - key: ENVIRONMENT
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: LOG_LEVEL
+        value: INFO
+
+  # CrewAI Agents Background Service
+  - type: background
+    name: reagent-agents
+    env: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m src.agents.orchestrator
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: DATABASE_URL
+        fromDatabase:
+          name: reagent-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: reagent-redis
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: DOMAIN_API_KEY
+        sync: false
+      - key: REA_API_KEY
+        sync: false
+      - key: CORELOGIC_API_KEY
+        sync: false
+      - key: NSW_LPI_API_KEY
+        sync: false
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+
+  # Celery Workers
+  - type: background
+    name: reagent-celery-worker
+    env: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A src.core.celery worker --loglevel=info --concurrency=2
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: DATABASE_URL
+        fromDatabase:
+          name: reagent-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: reagent-redis
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: reagent-redis
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+
+  # Celery Beat Scheduler  
+  - type: background
+    name: reagent-celery-beat
+    env: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A src.core.celery beat --loglevel=info
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: DATABASE_URL
+        fromDatabase:
+          name: reagent-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: reagent-redis
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: reagent-redis
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+
+databases:
+  - name: reagent-postgres
+    databaseName: reagent
+    user: reagent
+    plan: starter
+
+  - name: reagent-redis
+    type: redis
+    plan: starter
+    maxmemoryPolicy: allkeys-lru

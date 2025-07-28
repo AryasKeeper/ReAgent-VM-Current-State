@@ -1,0 +1,55 @@
+# Multi-stage build for CrewAI agents
+FROM python:3.11-slim as builder
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+# Production stage
+FROM python:3.11-slim as production
+
+# Create non-root user  
+RUN groupadd -r reagent && useradd -r -g reagent reagent
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy installed packages from builder
+COPY --from=builder /root/.local /home/reagent/.local
+
+# Copy application code
+COPY src/ ./src/
+COPY sql/ ./sql/
+COPY .env.example .env
+
+# Create logs directory
+RUN mkdir -p logs && chown -R reagent:reagent /app
+
+# Switch to non-root user
+USER reagent
+
+# Make sure scripts in .local are usable
+ENV PATH=/home/reagent/.local/bin:$PATH
+
+# Health check - verify agents can be imported
+HEALTHCHECK --interval=60s --timeout=30s --start-period=10s --retries=3 \
+    CMD python -c "from src.agents.orchestrator import AgentOrchestrator; print('Agents healthy')" || exit 1
+
+# Default command - run the agent orchestrator
+CMD ["python", "-m", "src.agents.orchestrator"]

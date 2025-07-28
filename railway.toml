@@ -1,0 +1,36 @@
+# Railway configuration for ReAgent Sydney
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile.api"
+
+[deploy]
+startCommand = "uvicorn src.api.main:app --host 0.0.0.0 --port $PORT"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+# Environment variables (set in Railway dashboard)
+# DATABASE_URL - PostgreSQL connection string
+# REDIS_URL - Redis connection string  
+# OPENAI_API_KEY - OpenAI API key
+# DOMAIN_API_KEY - Domain.com.au API key
+# REA_API_KEY - RealEstate.com.au API key
+# CORELOGIC_API_KEY - CoreLogic API key
+# NSW_LPI_API_KEY - NSW Land Property Information API key
+
+[services.api]
+source = "."
+builder = "dockerfile"
+dockerfilePath = "Dockerfile.api"
+
+[services.agents]
+source = "."
+builder = "dockerfile" 
+dockerfilePath = "Dockerfile.agents"
+
+[services.celery-worker]
+source = "."
+builder = "dockerfile"
+dockerfilePath = "Dockerfile.celery"
