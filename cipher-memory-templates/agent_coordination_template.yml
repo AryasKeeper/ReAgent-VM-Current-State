@@ -1,0 +1,58 @@
+type: "agent_coordination"
+timestamp: "2025-01-30T03:30:00Z"
+agent: "Cascade|Claude|Gemini"
+project: "ReAgent Sydney"
+version: "1.0"
+
+coordination_event:
+  title: "Brief description of coordination event"
+  type: "handoff|collaboration|decision|status_update|escalation"
+  priority: "urgent|high|medium|low"
+  
+participants:
+  initiating_agent: "Cascade|Claude|Gemini"
+  target_agents: ["Cascade", "Claude", "Gemini"]
+  coordination_type: "sequential|parallel|hierarchical"
+  
+context:
+  current_task: "What task is being coordinated"
+  status: "starting|in_progress|blocked|completed|handoff_ready"
+  dependencies: "What this coordination depends on"
+  blockers: "Any current blockers or issues"
+  
+handoff_details:
+  from_agent: "Agent completing work"
+  to_agent: "Agent receiving work"
+  work_completed: "Summary of completed work"
+  next_steps: "What needs to be done next"
+  context_preserved: "Important context to maintain"
+  
+decision_points:
+  decisions_made: "Key decisions during coordination"
+  rationale: "Why these decisions were made"
+  alternatives_considered: "Other options discussed"
+  approval_required: "true|false"
+  
+communication:
+  coordination_method: "verbal|written|tool_based"
+  key_messages: "Important messages exchanged"
+  follow_up_required: "Any follow-up actions needed"
+  documentation_created: "Documentation or artifacts created"
+  
+outcomes:
+  results_achieved: "What was accomplished"
+  next_coordination: "When next coordination is needed"
+  success_criteria: "How to measure success"
+  lessons_learned: "Key insights from this coordination"
+  
+workflow_tracking:
+  phase: "planning|development|testing|deployment|maintenance"
+  milestone: "Current milestone or checkpoint"
+  timeline: "Expected timeline for next steps"
+  resource_allocation: "How work is distributed among agents"
+  
+metadata:
+  related_memories: ["memory_id_1", "memory_id_2"]
+  coordination_session_id: "unique_session_id"
+  duration: "Time spent on coordination"
+  efficiency_rating: "1-5 scale for coordination effectiveness"

@@ -1,0 +1,52 @@
+{
+  "deployment_timestamp": "2025-07-29T02:36:33.296159",
+  "weaviate_url": "http://localhost:8080",
+  "schemas_deployed": {
+    "Property": {
+      "class_name": "Property",
+      "status": "failed",
+      "deployment_time": null,
+      "validation_passed": false,
+      "performance_metrics": {},
+      "errors": [
+        "EOF when reading a line"
+      ]
+    },
+    "BuyerProfile": {
+      "class_name": "BuyerProfile",
+      "status": "failed",
+      "deployment_time": null,
+      "validation_passed": false,
+      "performance_metrics": {},
+      "errors": [
+        "EOF when reading a line"
+      ]
+    },
+    "PropertyMatch": {
+      "class_name": "PropertyMatch",
+      "status": "failed",
+      "deployment_time": null,
+      "validation_passed": false,
+      "performance_metrics": {},
+      "errors": [
+        "EOF when reading a line"
+      ]
+    }
+  },
+  "performance_metrics": {
+    "vector_operations": {
+      "vector_search_available": true,
+      "embedding_generation_time": null,
+      "search_latency": null,
+      "errors": []
+    }
+  },
+  "validation_results": {},
+  "errors": [],
+  "summary": {
+    "total_schemas": 3,
+    "successful_deployments": 0,
+    "failed_deployments": 3,
+    "total_errors": 0
+  }
+}

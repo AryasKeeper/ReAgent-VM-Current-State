@@ -1,0 +1,26 @@
+{
+  "listings": [
+    {
+      "id": "DOM001",
+      "headline": "3 Bedroom House in Surry Hills",
+      "propertyType": "House",
+      "propertyDetails": {
+        "displayableAddress": "123 Crown Street, Surry Hills NSW 2010",
+        "suburb": "Surry Hills",
+        "postcode": "2010",
+        "state": "NSW",
+        "bedrooms": 3,
+        "bathrooms": 2,
+        "latitude": -33.8889,
+        "longitude": 151.2093
+      },
+      "priceDetails": {
+        "displayPrice": "$1,200,000",
+        "price": 1200000
+      },
+      "listing": {
+        "listingType": "Sale"
+      }
+    }
+  ]
+}

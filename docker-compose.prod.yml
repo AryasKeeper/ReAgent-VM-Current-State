@@ -1,0 +1,623 @@
+version: '3.8'
+
+# ReAgent Sydney - Production Deployment Configuration
+# Optimized for VPS/dedicated server deployment with monitoring and security
+
+services:
+  # =================================================================
+  # DATABASE LAYER
+  # =================================================================
+
+  # PostgreSQL with TimescaleDB - Primary database
+  postgres:
+    image: timescale/timescaledb:latest-pg15
+    container_name: reagent-postgres
+    environment:
+      POSTGRES_DB: reagent
+      POSTGRES_USER: reagent
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      TIMESCALEDB_TELEMETRY: off
+      # Production performance settings
+      POSTGRES_SHARED_PRELOAD_LIBRARIES: 'timescaledb,pg_stat_statements'
+      POSTGRES_MAX_CONNECTIONS: 200
+      POSTGRES_SHARED_BUFFERS: '256MB'
+      POSTGRES_EFFECTIVE_CACHE_SIZE: '1GB'
+      POSTGRES_WORK_MEM: '4MB'
+      POSTGRES_MAINTENANCE_WORK_MEM: '64MB'
+      POSTGRES_CHECKPOINT_COMPLETION_TARGET: 0.9
+      POSTGRES_WAL_BUFFERS: '16MB'
+      POSTGRES_DEFAULT_STATISTICS_TARGET: 100
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init:/docker-entrypoint-initdb.d:ro
+      - ./config/postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./backups/postgres:/backups
+    ports:
+      - "127.0.0.1:5432:5432"  # Bind only to localhost
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reagent -d reagent"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - reagent-backend
+      - reagent-monitoring
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    secrets:
+      - postgres_password
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # PostgreSQL Read Replica for analytics and reporting
+  postgres-replica:
+    image: timescale/timescaledb:latest-pg15
+    container_name: reagent-postgres-replica
+    environment:
+      POSTGRES_DB: reagent
+      POSTGRES_USER: reagent
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      TIMESCALEDB_TELEMETRY: off
+      PGUSER: postgres
+      POSTGRES_REPLICA_OF: postgres
+    volumes:
+      - postgres_replica_data:/var/lib/postgresql/data
+      - ./config/postgres/replica.conf:/etc/postgresql/postgresql.conf:ro
+    ports:
+      - "127.0.0.1:5433:5432"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reagent -d reagent"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - reagent-backend
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+    secrets:
+      - postgres_password
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "2"
+
+  # Redis Cluster for caching and sessions
+  redis-master:
+    image: redis:7-alpine
+    container_name: reagent-redis-master
+    command: >
+      redis-server 
+      --requirepass ${REDIS_PASSWORD}
+      --appendonly yes
+      --appendfsync everysec
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --tcp-keepalive 60
+      --timeout 300
+    volumes:
+      - redis_master_data:/data
+      - ./config/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - reagent-backend
+      - reagent-monitoring
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "2"
+
+  # Redis Sentinel for high availability
+  redis-sentinel:
+    image: redis:7-alpine
+    container_name: reagent-redis-sentinel
+    command: >
+      redis-sentinel /etc/redis/sentinel.conf
+      --sentinel announce-ip ${EXTERNAL_IP:-127.0.0.1}
+      --sentinel announce-port 26379
+    volumes:
+      - ./config/redis/sentinel.conf:/etc/redis/sentinel.conf:ro
+    ports:
+      - "127.0.0.1:26379:26379"
+    depends_on:
+      - redis-master
+    restart: unless-stopped
+    networks:
+      - reagent-backend
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.2'
+
+  # Weaviate vector database
+  weaviate:
+    image: semitechnologies/weaviate:1.21.2
+    container_name: reagent-weaviate
+    environment:
+      QUERY_DEFAULTS_LIMIT: 50
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'false'
+      AUTHENTICATION_APIKEY_ENABLED: 'true'
+      AUTHENTICATION_APIKEY_ALLOWED_KEYS: '${WEAVIATE_API_KEY}'
+      AUTHENTICATION_APIKEY_USERS: 'reagent@reagent.com'
+      AUTHORIZATION_ADMINLIST_ENABLED: 'true'
+      AUTHORIZATION_ADMINLIST_USERS: 'reagent@reagent.com'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      DEFAULT_VECTORIZER_MODULE: 'text2vec-openai'
+      ENABLE_MODULES: 'text2vec-openai,generative-openai,backup-filesystem'
+      CLUSTER_HOSTNAME: 'weaviate-node1'
+      CLUSTER_GOSSIP_BIND_PORT: '7102'
+      CLUSTER_DATA_BIND_PORT: '7103'
+      BACKUP_FILESYSTEM_PATH: '/var/lib/weaviate/backups'
+      # Performance tuning
+      LIMIT_RESOURCES: 'true'
+      QUERY_MAXIMUM_RESULTS: 10000
+      TRACK_VECTOR_DIMENSIONS: 'true'
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+      - ./backups/weaviate:/var/lib/weaviate/backups
+    ports:
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:7102:7102"  # Gossip
+      - "127.0.0.1:7103:7103"  # Data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-H", "Authorization: Bearer ${WEAVIATE_API_KEY}", "http://localhost:8080/v1/.well-known/ready"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - reagent-backend
+      - reagent-monitoring
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.3'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # =================================================================
+  # APPLICATION LAYER
+  # =================================================================
+
+  # FastAPI backend with production WSGI server
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile.api
+      args:
+        BUILD_ENV: production
+    container_name: reagent-api
+    environment:
+      # Database connections
+      DATABASE_URL: postgresql+asyncpg://reagent:${POSTGRES_PASSWORD}@postgres:5432/reagent
+      DATABASE_REPLICA_URL: postgresql+asyncpg://reagent:${POSTGRES_PASSWORD}@postgres-replica:5432/reagent
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis-master:6379/0
+      WEAVIATE_URL: http://weaviate:8080
+      WEAVIATE_API_KEY: ${WEAVIATE_API_KEY}
+      
+      # External APIs
+      OPENAI_API_KEY_FILE: /run/secrets/openai_api_key
+      DOMAIN_API_KEY_FILE: /run/secrets/domain_api_key  
+      REA_API_KEY_FILE: /run/secrets/rea_api_key
+      CORELOGIC_API_KEY_FILE: /run/secrets/corelogic_api_key
+      NSW_LPI_API_KEY_FILE: /run/secrets/nsw_lpi_api_key
+      
+      # Production settings
+      ENVIRONMENT: production
+      DEBUG: false
+      LOG_LEVEL: INFO
+      API_WORKERS: 4
+      SECRET_KEY_FILE: /run/secrets/secret_key
+      
+      # Security
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://yourdomain.com}
+      SECURE_COOKIES: true
+      SESSION_TIMEOUT: 3600
+      
+      # Performance
+      DB_POOL_SIZE: 20
+      DB_MAX_OVERFLOW: 30
+      REDIS_MAX_CONNECTIONS: 20
+      REQUEST_TIMEOUT: 30
+      
+      # Monitoring
+      ENABLE_METRICS: true
+      METRICS_PORT: 8001
+      SENTRY_DSN: ${SENTRY_DSN}
+      
+    ports:
+      - "${API_PORT:-8000}:8000"
+      - "127.0.0.1:8001:8001"  # Metrics endpoint
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis-master:
+        condition: service_healthy
+      weaviate:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+      - /etc/ssl/certs:/etc/ssl/certs:ro  # SSL certificates
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - reagent-backend
+      - reagent-monitoring
+      - reagent-frontend
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.5'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    secrets:
+      - openai_api_key
+      - domain_api_key
+      - rea_api_key
+      - corelogic_api_key
+      - nsw_lpi_api_key
+      - secret_key
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+  # CrewAI agents orchestrator
+  agents:
+    build:
+      context: .
+      dockerfile: Dockerfile.agents
+      args:
+        BUILD_ENV: production
+    container_name: reagent-agents
+    environment:
+      # Database connections  
+      DATABASE_URL: postgresql+asyncpg://reagent:${POSTGRES_PASSWORD}@postgres:5432/reagent
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis-master:6379/0
+      WEAVIATE_URL: http://weaviate:8080
+      WEAVIATE_API_KEY: ${WEAVIATE_API_KEY}
+      
+      # External APIs
+      OPENAI_API_KEY_FILE: /run/secrets/openai_api_key
+      DOMAIN_API_KEY_FILE: /run/secrets/domain_api_key  
+      REA_API_KEY_FILE: /run/secrets/rea_api_key
+      CORELOGIC_API_KEY_FILE: /run/secrets/corelogic_api_key
+      NSW_LPI_API_KEY_FILE: /run/secrets/nsw_lpi_api_key
+      
+      # Production settings
+      ENVIRONMENT: production
+      LOG_LEVEL: INFO
+      CREWAI_MAX_WORKERS: 6
+      CREWAI_TASK_TIMEOUT: 600
+      CREWAI_RETRY_ATTEMPTS: 3
+      
+      # Monitoring
+      ENABLE_METRICS: true
+      METRICS_PORT: 8002
+      
+    ports:
+      - "127.0.0.1:8002:8002"  # Metrics endpoint
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis-master:
+        condition: service_healthy
+      weaviate:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8002/health')"]
+      interval: 60s
+      timeout: 15s
+      retries: 3
+      start_period: 120s
+    restart: unless-stopped
+    networks:
+      - reagent-backend
+      - reagent-monitoring
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+          cpus: '2.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    secrets:
+      - openai_api_key
+      - domain_api_key
+      - rea_api_key
+      - corelogic_api_key
+      - nsw_lpi_api_key
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "5"
+
+  # Celery worker for asynchronous tasks
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+      args:
+        BUILD_ENV: production
+    container_name: reagent-celery-worker
+    command: >
+      celery -A src.core.celery worker 
+      --loglevel=info 
+      --concurrency=4 
+      --max-tasks-per-child=1000
+      --time-limit=3600
+      --soft-time-limit=3300
+    environment:
+      DATABASE_URL: postgresql+asyncpg://reagent:${POSTGRES_PASSWORD}@postgres:5432/reagent
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis-master:6379/0
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD}@redis-master:6379/1
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD}@redis-master:6379/2
+      ENVIRONMENT: production
+      LOG_LEVEL: INFO
+      CELERY_TASK_SERIALIZER: json
+      CELERY_RESULT_SERIALIZER: json
+      CELERY_ACCEPT_CONTENT: json
+      CELERY_TIMEZONE: Australia/Sydney
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis-master:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "celery", "-A", "src.core.celery", "inspect", "ping"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - reagent-backend
+      - reagent-monitoring
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.3'
+      replicas: 2  # Multiple workers for redundancy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # Celery beat scheduler
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+      args:
+        BUILD_ENV: production
+    container_name: reagent-celery-beat
+    command: >
+      celery -A src.core.celery beat 
+      --loglevel=info 
+      --schedule=/app/celerybeat-schedule
+      --pidfile=/app/celerybeat.pid
+    environment:
+      DATABASE_URL: postgresql+asyncpg://reagent:${POSTGRES_PASSWORD}@postgres:5432/reagent
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis-master:6379/0
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD}@redis-master:6379/1
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD}@redis-master:6379/2
+      ENVIRONMENT: production
+      LOG_LEVEL: INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis-master:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+      - celery_beat_data:/app
+    healthcheck:
+      test: ["CMD", "test", "-f", "/app/celerybeat.pid"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - reagent-backend
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.2'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "2"
+
+  # Nginx reverse proxy and load balancer
+  nginx:
+    image: nginx:alpine
+    container_name: reagent-nginx
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - reagent-frontend
+      - reagent-monitoring
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+    logging:
+      driver: "json-file" 
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+# =================================================================
+# VOLUMES
+# =================================================================
+
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_DIR:-./data}/postgres
+  
+  postgres_replica_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_DIR:-./data}/postgres_replica
+  
+  redis_master_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_DIR:-./data}/redis_master
+  
+  weaviate_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_DIR:-./data}/weaviate
+  
+  celery_beat_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_DIR:-./data}/celery_beat
+
+# =================================================================
+# NETWORKS
+# =================================================================
+
+networks:
+  reagent-backend:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: reagent-backend
+      
+  reagent-frontend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: reagent-frontend
+      
+  reagent-monitoring:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: reagent-monitoring
+
+# =================================================================
+# SECRETS
+# =================================================================
+
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password.txt
+  openai_api_key:
+    file: ./secrets/openai_api_key.txt
+  domain_api_key:
+    file: ./secrets/domain_api_key.txt
+  rea_api_key:
+    file: ./secrets/rea_api_key.txt
+  corelogic_api_key:
+    file: ./secrets/corelogic_api_key.txt
+  nsw_lpi_api_key:
+    file: ./secrets/nsw_lpi_api_key.txt
+  secret_key:
+    file: ./secrets/secret_key.txt

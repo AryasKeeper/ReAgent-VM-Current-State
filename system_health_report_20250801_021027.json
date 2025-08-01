@@ -1,0 +1,105 @@
+{
+  "timestamp": "2025-08-01T09:10:24.424561+00:00",
+  "system_status": "healthy",
+  "services": {
+    "api_server": {
+      "host": "localhost",
+      "port": 8000,
+      "accessible": true
+    },
+    "health_monitor": {
+      "host": "localhost",
+      "port": 8001,
+      "accessible": false
+    },
+    "prometheus": {
+      "host": "localhost",
+      "port": 9090,
+      "accessible": false
+    },
+    "grafana": {
+      "host": "localhost",
+      "port": 3001,
+      "accessible": false
+    }
+  },
+  "databases": {
+    "postgresql": {
+      "host": "localhost",
+      "port": 5432,
+      "accessible": true
+    },
+    "redis": {
+      "host": "localhost",
+      "port": 6379,
+      "accessible": true
+    },
+    "weaviate": {
+      "host": "localhost",
+      "port": 8080,
+      "accessible": true
+    },
+    "chromadb": {
+      "host": "localhost",
+      "port": 8000,
+      "accessible": true
+    }
+  },
+  "containers": [
+    {
+      "name": "relaxed_mcnulty",
+      "status": "Up 44 minutes",
+      "ports": "",
+      "healthy": false
+    },
+    {
+      "name": "reagent-weaviate-1",
+      "status": "Up 2 hours (healthy)",
+      "ports": "0.0.0.0:8080->8080/tcp",
+      "healthy": true
+    },
+    {
+      "name": "reagent-redis-1",
+      "status": "Up 2 hours (healthy)",
+      "ports": "0.0.0.0:6379->6379/tcp",
+      "healthy": true
+    },
+    {
+      "name": "reagent-postgres-1",
+      "status": "Up 2 hours (healthy)",
+      "ports": "0.0.0.0:5432->5432/tcp",
+      "healthy": true
+    },
+    {
+      "name": "reagent-chromadb-1",
+      "status": "Up 2 hours (unhealthy)",
+      "ports": "0.0.0.0:8000->8000/tcp",
+      "healthy": true
+    }
+  ],
+  "network": {},
+  "issues": [
+    {
+      "component": "reagent-postgres-1",
+      "severity": "warning",
+      "message": "Found 4 errors in recent logs"
+    },
+    {
+      "component": "disk",
+      "severity": "warning",
+      "message": "Disk usage at 87%"
+    }
+  ],
+  "summary": {
+    "containers_running": 5,
+    "containers_total": 5,
+    "disk_usage_percent": 87,
+    "healthy_databases": 4,
+    "total_databases": 4,
+    "healthy_services": 1,
+    "total_services": 4,
+    "critical_issues": 0,
+    "warning_issues": 2,
+    "overall_status": "HEALTHY"
+  }
+}

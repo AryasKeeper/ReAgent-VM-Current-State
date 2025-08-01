@@ -1,0 +1,90 @@
+{
+  "deployment_timestamp": "2025-07-29T02:50:41.926676",
+  "weaviate_url": "http://localhost:8080",
+  "force_recreate": true,
+  "schemas_deployed": {
+    "Property": {
+      "class_name": "Property",
+      "status": "success",
+      "deployment_time": 0.0701913833618164,
+      "pre_deployment_stats": {
+        "object_count": 0,
+        "exists": false,
+        "error": "'data'"
+      },
+      "post_deployment_stats": {
+        "object_count": 0,
+        "exists": true
+      },
+      "validation_passed": true,
+      "performance_metrics": {
+        "basic_operations_time": 0.0029604434967041016,
+        "initial_object_count": 0
+      },
+      "errors": []
+    },
+    "BuyerProfile": {
+      "class_name": "BuyerProfile",
+      "status": "success",
+      "deployment_time": 0.05233335494995117,
+      "pre_deployment_stats": {
+        "object_count": 0,
+        "exists": false,
+        "error": "'data'"
+      },
+      "post_deployment_stats": {
+        "object_count": 0,
+        "exists": true
+      },
+      "validation_passed": true,
+      "performance_metrics": {
+        "basic_operations_time": 0.0038309097290039062,
+        "initial_object_count": 0
+      },
+      "errors": []
+    },
+    "PropertyMatch": {
+      "class_name": "PropertyMatch",
+      "status": "validation_failed",
+      "deployment_time": 2.0620853900909424,
+      "pre_deployment_stats": {
+        "object_count": 0,
+        "exists": true
+      },
+      "post_deployment_stats": {
+        "object_count": 0,
+        "exists": true
+      },
+      "validation_passed": false,
+      "performance_metrics": {
+        "basic_operations_time": 0.00554656982421875,
+        "initial_object_count": 0
+      },
+      "errors": [
+        "Vectorizer mismatch: expected None, got text2vec-openai"
+      ]
+    }
+  },
+  "performance_metrics": {
+    "vector_search_available": true,
+    "openai_integration": true,
+    "transformers_available": false,
+    "schema_access_times": {
+      "full_schema_retrieval": 0.0031926631927490234,
+      "BuyerProfile_count": 0.003593921661376953,
+      "Property_count": 0.005972623825073242,
+      "PropertyMatch_count": 0.0034332275390625
+    },
+    "errors": []
+  },
+  "validation_results": {},
+  "errors": [],
+  "summary": {
+    "total_schemas": 3,
+    "successful_deployments": 2,
+    "failed_deployments": 0,
+    "skipped_deployments": 0,
+    "total_errors": 0,
+    "deployment_success_rate": 66.66666666666666
+  }
+}

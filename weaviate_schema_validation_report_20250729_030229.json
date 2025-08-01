@@ -1,0 +1,140 @@
+{
+  "test_timestamp": "2025-07-29T03:02:28.764963",
+  "schema_validation": {
+    "Property": {
+      "exists": true,
+      "properties_count": 27,
+      "vectorizer": "text2vec-openai",
+      "vector_config": {
+        "skip": false,
+        "cleanupIntervalSeconds": 300,
+        "maxConnections": 64,
+        "efConstruction": 128,
+        "ef": -1,
+        "dynamicEfMin": 100,
+        "dynamicEfMax": 500,
+        "dynamicEfFactor": 8,
+        "vectorCacheMaxObjects": 1000000,
+        "flatSearchCutoff": 40000,
+        "distance": "cosine",
+        "pq": {
+          "enabled": false,
+          "bitCompression": false,
+          "segments": 0,
+          "centroids": 256,
+          "trainingLimit": 100000,
+          "encoder": {
+            "type": "kmeans",
+            "distribution": "log-normal"
+          }
+        }
+      },
+      "validation_passed": true
+    },
+    "BuyerProfile": {
+      "exists": true,
+      "properties_count": 32,
+      "vectorizer": "text2vec-openai",
+      "vector_config": {
+        "skip": false,
+        "cleanupIntervalSeconds": 300,
+        "maxConnections": 32,
+        "efConstruction": 64,
+        "ef": -1,
+        "dynamicEfMin": 50,
+        "dynamicEfMax": 200,
+        "dynamicEfFactor": 4,
+        "vectorCacheMaxObjects": 100000,
+        "flatSearchCutoff": 10000,
+        "distance": "cosine",
+        "pq": {
+          "enabled": false,
+          "bitCompression": false,
+          "segments": 0,
+          "centroids": 256,
+          "trainingLimit": 100000,
+          "encoder": {
+            "type": "kmeans",
+            "distribution": "log-normal"
+          }
+        }
+      },
+      "validation_passed": true
+    },
+    "PropertyMatch": {
+      "exists": true,
+      "properties_count": 16,
+      "vectorizer": "text2vec-openai",
+      "vector_config": {
+        "skip": true,
+        "cleanupIntervalSeconds": 300,
+        "maxConnections": 64,
+        "efConstruction": 128,
+        "ef": -1,
+        "dynamicEfMin": 100,
+        "dynamicEfMax": 500,
+        "dynamicEfFactor": 8,
+        "vectorCacheMaxObjects": 1000000000000,
+        "flatSearchCutoff": 40000,
+        "distance": "cosine",
+        "pq": {
+          "enabled": false,
+          "bitCompression": false,
+          "segments": 0,
+          "centroids": 256,
+          "trainingLimit": 100000,
+          "encoder": {
+            "type": "kmeans",
+            "distribution": "log-normal"
+          }
+        }
+      },
+      "validation_passed": true
+    }
+  },
+  "data_operations": {
+    "Property": {
+      "insert": false,
+      "retrieve": false
+    },
+    "BuyerProfile": {
+      "insert": false,
+      "retrieve": false
+    },
+    "PropertyMatch": {
+      "insert": false,
+      "retrieve": false
+    }
+  },
+  "vector_search": {
+    "Property": {
+      "success": false,
+      "results_count": 0,
+      "method": "hybrid"
+    },
+    "BuyerProfile": {
+      "success": false,
+      "results_count": 0,
+      "method": "hybrid"
+    }
+  },
+  "performance_metrics": {
+    "schema_retrieval_time": 0.0037300586700439453,
+    "Property_count_time": 0.030489444732666016,
+    "Property_object_count": 0,
+    "BuyerProfile_count_time": 0.004827022552490234,
+    "BuyerProfile_object_count": 0,
+    "PropertyMatch_count_time": 0.0052144527435302734,
+    "PropertyMatch_object_count": 0,
+    "health_check_time": 0.007964134216308594,
+    "cluster_ready": true
+  },
+  "errors": [],
+  "summary": {
+    "schema_validation_passed": true,
+    "data_operations_passed": false,
+    "vector_search_working": false,
+    "overall_status": "FAILED",
+    "test_timestamp": "2025-07-29T03:02:29.071764"
+  }
+}

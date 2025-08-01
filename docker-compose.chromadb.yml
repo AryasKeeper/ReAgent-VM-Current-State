@@ -1,0 +1,70 @@
+# ReAgent Sydney - ChromaDB Vector Database Configuration
+# Reliable vector database alternative with OpenAI embeddings
+
+services:
+  # PostgreSQL with TimescaleDB
+  postgres:
+    image: timescale/timescaledb:latest-pg15
+    environment:
+      POSTGRES_DB: reagent
+      POSTGRES_USER: reagent
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-reagent_dev_password}
+      TIMESCALEDB_TELEMETRY: off
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reagent -d reagent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - reagent-net
+
+  # Redis for caching  
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - reagent-net
+
+  # ChromaDB vector database - Simple and reliable
+  chromadb:
+    image: chromadb/chroma:latest
+    volumes:
+      - chromadb_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma
+      - ANONYMIZED_TELEMETRY=FALSE
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    networks:
+      - reagent-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
+  chromadb_data:
+
+networks:
+  reagent-net:
+    driver: bridge

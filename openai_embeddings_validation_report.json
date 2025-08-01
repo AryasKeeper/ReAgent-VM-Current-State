@@ -1,0 +1,260 @@
+{
+  "validation_timestamp": 1753779550.4905372,
+  "validation_date": "2025-07-29 08:59:10 UTC",
+  "configuration": {
+    "openai_api_key_configured": true,
+    "weaviate_url": "https://reagent-sydney-prod-cluster.weaviate.network",
+    "environment": "production"
+  },
+  "tests": [
+    {
+      "test_name": "API Connectivity",
+      "status": "passed",
+      "details": {
+        "raw_api_response": "OK",
+        "response_time_seconds": 1.062,
+        "tokens_used": 16
+      },
+      "errors": []
+    },
+    {
+      "test_name": "Embedding Generation",
+      "status": "passed",
+      "details": {
+        "embeddings_generated": 5,
+        "all_correct_dimensions": true,
+        "expected_dimensions": 1536,
+        "actual_dimensions": [
+          1536,
+          1536,
+          1536,
+          1536,
+          1536
+        ],
+        "average_generation_time": 0.496,
+        "total_time_seconds": 2.481,
+        "sample_embeddings": [
+          {
+            "text": "Luxury 3-bedroom apartment in Bondi with ocean vie...",
+            "embedding_dimensions": 1536,
+            "generation_time_seconds": 0.502,
+            "tokens_used": 19,
+            "first_5_values": [
+              -0.03441236540675163,
+              0.012445579282939434,
+              0.016186052933335304,
+              -0.0010972463060170412,
+              -0.004228679463267326
+            ],
+            "embedding_magnitude": 1.0000000496391421
+          },
+          {
+            "text": "Family-friendly 4-bedroom house in Northern Beache...",
+            "embedding_dimensions": 1536,
+            "generation_time_seconds": 0.404,
+            "tokens_used": 18,
+            "first_5_values": [
+              -0.0042951880022883415,
+              0.03961421921849251,
+              0.004538922104984522,
+              0.04058915376663208,
+              0.01225633267313242
+            ],
+            "embedding_magnitude": 0.999999997494744
+          },
+          {
+            "text": "Modern 2-bedroom unit in CBD with harbour glimpses...",
+            "embedding_dimensions": 1536,
+            "generation_time_seconds": 0.679,
+            "tokens_used": 19,
+            "first_5_values": [
+              -0.05584360286593437,
+              -0.019122067838907242,
+              0.055037520825862885,
+              0.0036805502604693174,
+              0.0011650411179289222
+            ],
+            "embedding_magnitude": 1.0000000105803808
+          },
+          {
+            "text": "Heritage-listed Victorian terrace in Paddington wi...",
+            "embedding_dimensions": 1536,
+            "generation_time_seconds": 0.581,
+            "tokens_used": 15,
+            "first_5_values": [
+              -0.03454473242163658,
+              -0.003587337676435709,
+              0.057822566479444504,
+              0.015731139108538628,
+              -0.01296756137162447
+            ],
+            "embedding_magnitude": 1.0000000196238275
+          },
+          {
+            "text": "Investment opportunity: 1-bedroom studio in Parram...",
+            "embedding_dimensions": 1536,
+            "generation_time_seconds": 0.315,
+            "tokens_used": 18,
+            "first_5_values": [
+              -0.062452055513858795,
+              -0.006160388700664043,
+              -0.022621572017669678,
+              0.03707393258810043,
+              0.004427779465913773
+            ],
+            "embedding_magnitude": 1.0000000013398718
+          }
+        ]
+      },
+      "errors": []
+    },
+    {
+      "test_name": "Similarity Calculations",
+      "status": "passed",
+      "details": {
+        "properties_tested": 3,
+        "buyers_tested": 3,
+        "total_comparisons": 9,
+        "similarity_range": [
+          0.245,
+          0.7793
+        ],
+        "average_similarity": 0.4371,
+        "valid_similarity_range": true,
+        "best_matches": [
+          {
+            "property_index": 0,
+            "buyer_index": 1,
+            "similarity_score": 0.4811,
+            "property_desc": "Luxury 3-bedroom apartment in Bondi with...",
+            "buyer_pref": "Young professional looking for modern ap..."
+          },
+          {
+            "property_index": 1,
+            "buyer_index": 0,
+            "similarity_score": 0.7793,
+            "property_desc": "Family-friendly 4-bedroom house in North...",
+            "buyer_pref": "Family seeking 4-bedroom house in Northe..."
+          },
+          {
+            "property_index": 2,
+            "buyer_index": 1,
+            "similarity_score": 0.6589,
+            "property_desc": "Modern 2-bedroom unit in CBD with harbou...",
+            "buyer_pref": "Young professional looking for modern ap..."
+          }
+        ],
+        "full_similarity_matrix": [
+          [
+            {
+              "property_index": 0,
+              "buyer_index": 0,
+              "similarity_score": 0.4512,
+              "property_desc": "Luxury 3-bedroom apartment in Bondi with...",
+              "buyer_pref": "Family seeking 4-bedroom house in Northe..."
+            },
+            {
+              "property_index": 0,
+              "buyer_index": 1,
+              "similarity_score": 0.4811,
+              "property_desc": "Luxury 3-bedroom apartment in Bondi with...",
+              "buyer_pref": "Young professional looking for modern ap..."
+            },
+            {
+              "property_index": 0,
+              "buyer_index": 2,
+              "similarity_score": 0.245,
+              "property_desc": "Luxury 3-bedroom apartment in Bondi with...",
+              "buyer_pref": "Investor interested in high-yield proper..."
+            }
+          ],
+          [
+            {
+              "property_index": 1,
+              "buyer_index": 0,
+              "similarity_score": 0.7793,
+              "property_desc": "Family-friendly 4-bedroom house in North...",
+              "buyer_pref": "Family seeking 4-bedroom house in Northe..."
+            },
+            {
+              "property_index": 1,
+              "buyer_index": 1,
+              "similarity_score": 0.4039,
+              "property_desc": "Family-friendly 4-bedroom house in North...",
+              "buyer_pref": "Young professional looking for modern ap..."
+            },
+            {
+              "property_index": 1,
+              "buyer_index": 2,
+              "similarity_score": 0.2468,
+              "property_desc": "Family-friendly 4-bedroom house in North...",
+              "buyer_pref": "Investor interested in high-yield proper..."
+            }
+          ],
+          [
+            {
+              "property_index": 2,
+              "buyer_index": 0,
+              "similarity_score": 0.4121,
+              "property_desc": "Modern 2-bedroom unit in CBD with harbou...",
+              "buyer_pref": "Family seeking 4-bedroom house in Northe..."
+            },
+            {
+              "property_index": 2,
+              "buyer_index": 1,
+              "similarity_score": 0.6589,
+              "property_desc": "Modern 2-bedroom unit in CBD with harbou...",
+              "buyer_pref": "Young professional looking for modern ap..."
+            },
+            {
+              "property_index": 2,
+              "buyer_index": 2,
+              "similarity_score": 0.256,
+              "property_desc": "Modern 2-bedroom unit in CBD with harbou...",
+              "buyer_pref": "Investor interested in high-yield proper..."
+            }
+          ]
+        ]
+      },
+      "errors": []
+    },
+    {
+      "test_name": "Batch Embedding Performance",
+      "status": "passed",
+      "details": {
+        "texts_processed": 10,
+        "individual_time_seconds": 2.851,
+        "batch_time_seconds": 0.518,
+        "performance_improvement_percent": 81.83,
+        "meets_requirement_2sec": true,
+        "embeddings_per_second": 19.3,
+        "individual_embeddings_count": 10,
+        "batch_embeddings_count": 10
+      },
+      "errors": []
+    },
+    {
+      "test_name": "Weaviate Integration",
+      "status": "configuration_ready",
+      "details": {
+        "configuration_checks": {
+          "openai_api_key_configured": true,
+          "weaviate_url_configured": true,
+          "text2vec_module_expected": "text2vec-openai",
+          "embedding_model_expected": "text-embedding-3-small",
+          "expected_dimensions": 1536
+        },
+        "all_basic_config_ready": true,
+        "weaviate_url": "https://reagent-sydney-prod-cluster.weaviate.network",
+        "note": "Direct Weaviate testing requires vector_db client initialization"
+      },
+      "errors": []
+    }
+  ],
+  "summary": {
+    "total_tests": 5,
+    "passed_tests": 5,
+    "failed_tests": 0,
+    "overall_status": "passed"
+  }
+}

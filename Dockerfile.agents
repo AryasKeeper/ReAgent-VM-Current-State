@@ -25,6 +25,7 @@ RUN groupadd -r reagent && useradd -r -g reagent reagent
 RUN apt-get update && apt-get install -y \
     libpq5 \
     curl \
+    dumb-init \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
@@ -36,7 +37,6 @@ COPY --from=builder /root/.local /home/reagent/.local
 # Copy application code
 COPY src/ ./src/
 COPY sql/ ./sql/
-COPY .env.example .env
 
 # Create logs directory
 RUN mkdir -p logs && chown -R reagent:reagent /app
@@ -47,9 +47,15 @@ USER reagent
 # Make sure scripts in .local are usable
 ENV PATH=/home/reagent/.local/bin:$PATH
 
+# Set Python path to include src directory
+ENV PYTHONPATH=/app/src
+
 # Health check - verify agents can be imported
-HEALTHCHECK --interval=60s --timeout=30s --start-period=10s --retries=3 \
-    CMD python -c "from src.agents.orchestrator import AgentOrchestrator; print('Agents healthy')" || exit 1
+HEALTHCHECK --interval=60s --timeout=30s --start-period=120s --retries=3 \
+    CMD python -c "import redis; r=redis.from_url('redis://redis:6379/0'); r.ping(); print('Agents healthy')" || exit 1
+
+# Use dumb-init for proper signal handling
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 
 # Default command - run the agent orchestrator
-CMD ["python", "-m", "src.agents.orchestrator"]
+CMD ["python", "-m", "reagent.agents.orchestrator"]

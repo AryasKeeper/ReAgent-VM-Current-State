@@ -37,8 +37,10 @@ coverage.xml
 *.cover
 .hypothesis/
 
+# Keep test fixtures for development
+# tests/fixtures/
+
 # Environments
-.env
 .venv
 env/
 venv/
@@ -62,17 +64,17 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 
-# Documentation
-*.md
-docs/
+# Documentation (keep essential docs)
+# *.md
+# docs/
 CHANGELOG*
-README*
+# README*
 LICENSE*
 
 # Development files
 .env.example
-docker-compose*.yml
-Dockerfile*
+# Keep docker-compose files for build context
+# Keep Dockerfiles for build context
 Makefile
 
 # Logs
@@ -83,10 +85,6 @@ logs/
 monitoring/
 .prometheus/
 .grafana/
-
-# Frontend (if building separately)
-frontend/
-node_modules/
 
 # Database files
 *.db
@@ -100,9 +98,17 @@ temp/
 # Project specific
 data/raw/
 data/processed/
-tests/
+# Keep tests/ for build validation
 *.test
 *_test.py
+
+# Build artifacts
+*.log
+.tmp
+
+# Keep essential config directories
+# config/
+# monitoring/
 
 # Security reports  
 *-report.json

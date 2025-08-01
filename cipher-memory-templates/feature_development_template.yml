@@ -1,0 +1,76 @@
+type: "feature_development"
+timestamp: "2025-01-30T03:30:00Z"
+agent: "Cascade|Claude|Gemini"
+project: "ReAgent Sydney"
+version: "1.0"
+
+feature_specification:
+  title: "Brief description of the feature"
+  category: "api_integration|ui_enhancement|performance|security|infrastructure"
+  priority: "critical|high|medium|low"
+  epic: "Related epic or larger feature set"
+  
+requirements:
+  functional: "What the feature should do"
+  non_functional: "Performance, security, scalability requirements"
+  acceptance_criteria: "How to know the feature is complete"
+  dependencies: "Other features or systems this depends on"
+  
+design:
+  approach: "High-level design strategy"
+  architecture: "Architectural patterns used"
+  data_model: "Any data model changes"
+  api_design: "API endpoints or interfaces"
+  
+implementation:
+  development_phases: 
+    - phase: "Phase 1"
+      description: "Initial implementation"
+      duration: "estimated time"
+    - phase: "Phase 2" 
+      description: "Enhancement and optimization"
+      duration: "estimated time"
+  
+  files_created:
+    - "path/to/new/file.py"
+    - "path/to/config/file.yml"
+  
+  files_modified:
+    - "path/to/existing/file.py"
+    - "path/to/updated/config.yml"
+  
+  code_patterns: "Key patterns or conventions used"
+  
+testing:
+  unit_tests: "Unit test coverage added"
+  integration_tests: "Integration test scenarios"
+  performance_tests: "Performance validation approach"
+  security_tests: "Security testing performed"
+  
+deployment:
+  deployment_strategy: "How the feature will be deployed"
+  rollback_plan: "How to rollback if issues arise"
+  monitoring: "Monitoring and alerting added"
+  documentation: "Documentation created or updated"
+  
+progress_tracking:
+  milestones:
+    - milestone: "Design Complete"
+      status: "complete|in_progress|pending"
+      date: "2025-01-30"
+    - milestone: "Implementation Complete"
+      status: "complete|in_progress|pending" 
+      date: "2025-02-05"
+    - milestone: "Testing Complete"
+      status: "complete|in_progress|pending"
+      date: "2025-02-10"
+  
+  current_status: "planning|development|testing|review|deployed"
+  completion_percentage: "0-100%"
+  blockers: "Any current blockers or issues"
+  
+metadata:
+  related_memories: ["memory_id_1", "memory_id_2"]
+  related_features: ["feature_id_1", "feature_id_2"]
+  stakeholders: ["product_owner", "tech_lead"]
+  team_members: ["developer_1", "developer_2"]

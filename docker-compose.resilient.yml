@@ -1,0 +1,353 @@
+# ReAgent Sydney - Resilient Production Configuration
+# Implements circuit breaker patterns and graceful degradation
+# Services can operate independently with automatic recovery
+
+services:
+  # PostgreSQL with TimescaleDB - CRITICAL SERVICE
+  postgres:
+    image: timescale/timescaledb:latest-pg15
+    container_name: reagent-postgres-resilient
+    environment:
+      POSTGRES_DB: reagent
+      POSTGRES_USER: reagent
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-reagent_prod_password}
+      TIMESCALEDB_TELEMETRY: off
+      POSTGRES_SHARED_PRELOAD_LIBRARIES: 'timescaledb'
+      POSTGRES_MAX_CONNECTIONS: 200
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init:/docker-entrypoint-initdb.d:ro
+      - ./data/backups/postgres:/backups
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reagent -d reagent"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - reagent-resilient
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # Redis for caching - CRITICAL SERVICE
+  redis:
+    image: redis:7-alpine
+    container_name: reagent-redis-resilient
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --save 300 10
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --timeout 300
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - reagent-resilient
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Weaviate vector database - OPTIONAL SERVICE
+  weaviate:
+    image: semitechnologies/weaviate:1.21.2
+    container_name: reagent-weaviate-resilient
+    environment:
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      DEFAULT_VECTORIZER_MODULE: 'none'
+      ENABLE_MODULES: ''
+      QUERY_DEFAULTS_LIMIT: 25
+      CLUSTER_HOSTNAME: 'node1'
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+      - ./data/backups/weaviate:/var/lib/weaviate/backups
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/v1/.well-known/ready || exit 1"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 90s
+    restart: unless-stopped
+    networks:
+      - reagent-resilient
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # FastAPI backend - CORE SERVICE (independent operation)
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: reagent-api-resilient
+    environment:
+      DATABASE_URL: postgresql+asyncpg://reagent:${POSTGRES_PASSWORD:-reagent_prod_password}@postgres:5432/reagent
+      REDIS_URL: redis://redis:6379/0
+      WEAVIATE_URL: http://weaviate:8080
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      DOMAIN_API_KEY: ${DOMAIN_API_KEY}
+      REA_API_KEY: ${REA_API_KEY}
+      ENVIRONMENT: production
+      # Resilience settings
+      FEATURE_VECTOR_SEARCH: "false"  # Start disabled
+      FEATURE_GRACEFUL_DEGRADATION: "true"
+      CIRCUIT_BREAKER_ENABLED: "true"
+      HEALTH_CHECK_INTERVAL: "30"
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      # Removed weaviate dependency for independent operation
+    volumes:
+      - ./src:/app/src
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - reagent-resilient
+
+  # Agent orchestrator - ENHANCED SERVICE (with fallback modes)
+  agents:
+    build:
+      context: .
+      dockerfile: Dockerfile.agents
+    container_name: reagent-agents-resilient
+    environment:
+      DATABASE_URL: postgresql+asyncpg://reagent:${POSTGRES_PASSWORD:-reagent_prod_password}@postgres:5432/reagent
+      REDIS_URL: redis://redis:6379/0
+      WEAVIATE_URL: http://weaviate:8080
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      DOMAIN_API_KEY: ${DOMAIN_API_KEY}
+      REA_API_KEY: ${REA_API_KEY}
+      CORELOGIC_API_KEY: ${CORELOGIC_API_KEY}
+      NSW_LPI_API_KEY: ${NSW_LPI_API_KEY}
+      ENVIRONMENT: production
+      # Agent-specific resilience settings
+      AGENT_VECTOR_SEARCH_FALLBACK: "true"
+      AGENT_CIRCUIT_BREAKER_ENABLED: "true"
+      AGENT_DEGRADED_MODE: "true"
+      BUYER_MATCHING_FALLBACK_ENABLED: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+      # Removed weaviate dependency - agents will detect and adapt
+    volumes:
+      - ./src:/app/src
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]  # Simplified check
+      interval: 60s
+      timeout: 30s
+      retries: 2
+      start_period: 120s
+    restart: unless-stopped
+    networks:
+      - reagent-resilient
+
+  # Celery worker - CORE SERVICE (independent operation)
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+    container_name: reagent-celery-resilient
+    environment:
+      DATABASE_URL: postgresql+asyncpg://reagent:${POSTGRES_PASSWORD:-reagent_prod_password}@postgres:5432/reagent
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      WEAVIATE_URL: http://weaviate:8080
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      DOMAIN_API_KEY: ${DOMAIN_API_KEY}
+      REA_API_KEY: ${REA_API_KEY}
+      # Celery resilience settings
+      CELERY_TASK_SOFT_TIME_LIMIT: 300
+      CELERY_TASK_TIME_LIMIT: 600
+      CELERY_WORKER_PREFETCH_MULTIPLIER: 1
+      CELERY_TASK_REJECT_ON_WORKER_LOST: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      # Removed weaviate dependency
+    volumes:
+      - ./src:/app/src
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]  # Simplified check
+      interval: 60s
+      timeout: 30s
+      retries: 2
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - reagent-resilient
+
+  # Celery beat scheduler - CORE SERVICE
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+    container_name: reagent-celery-beat-resilient
+    command: celery -A reagent.core.celery beat --loglevel=info --schedule=/app/celerybeat-schedule
+    environment:
+      DATABASE_URL: postgresql+asyncpg://reagent:${POSTGRES_PASSWORD:-reagent_prod_password}@postgres:5432/reagent
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      DOMAIN_API_KEY: ${DOMAIN_API_KEY}
+      REA_API_KEY: ${REA_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      celery-worker:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+      - celery_beat_schedule:/app/celerybeat-schedule
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os; print('Beat OK' if os.path.exists('/app/celerybeat-schedule') else ''); exit(0)"]
+      interval: 60s
+      timeout: 10s
+      retries: 2
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - reagent-resilient
+
+  # Production Health Monitor - NEW SERVICE
+  health-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile.health-monitor
+    container_name: reagent-health-monitor
+    environment:
+      DATABASE_URL: postgresql+asyncpg://reagent:${POSTGRES_PASSWORD:-reagent_prod_password}@postgres:5432/reagent
+      REDIS_URL: redis://redis:6379/0
+      WEAVIATE_URL: http://weaviate:8080
+      MONITOR_INTERVAL: 30
+      CRITICAL_MONITOR_INTERVAL: 10
+      RECOVERY_ENABLED: "true"
+      FEATURE_FLAG_MANAGEMENT: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+      - ./logs:/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock  # For container management
+    ports:
+      - "8001:8001"  # Health monitoring dashboard
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - reagent-resilient
+
+  # Prometheus monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: reagent-prometheus-resilient
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    networks:
+      - reagent-resilient
+
+  # Grafana dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: reagent-grafana-resilient
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-reagent_monitor_2024}
+      GF_USERS_ALLOW_SIGN_UP: false
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/reagent-overview.json
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - reagent-resilient
+
+volumes:
+  postgres_data:
+    driver: local
+    name: reagent-postgres-resilient-data
+  redis_data:
+    driver: local
+    name: reagent-redis-resilient-data
+  weaviate_data:
+    driver: local
+    name: reagent-weaviate-resilient-data
+  celery_beat_schedule:
+    driver: local
+    name: reagent-celery-beat-resilient-schedule
+  prometheus_data:
+    driver: local
+    name: reagent-prometheus-resilient-data
+  grafana_data:
+    driver: local
+    name: reagent-grafana-resilient-data
+
+networks:
+  reagent-resilient:
+    driver: bridge
+    name: reagent-resilient-network

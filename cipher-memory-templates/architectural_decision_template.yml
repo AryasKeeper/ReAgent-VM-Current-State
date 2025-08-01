@@ -1,0 +1,39 @@
+type: "architectural_decision"
+timestamp: "2025-01-30T03:30:00Z"
+agent: "Cascade|Claude|Gemini"
+project: "ReAgent Sydney"
+version: "1.0"
+
+decision:
+  title: "Brief description of architectural decision"
+  category: "import_structure|database|api_integration|security|performance"
+  priority: "critical|high|medium|low"
+  
+rationale:
+  problem: "What problem this decision solves"
+  alternatives: "Other options considered"
+  reasoning: "Why this approach was chosen"
+  
+impact:
+  scope: "Which components/modules affected"
+  breaking_changes: "Any breaking changes introduced"
+  migration_required: "true|false"
+  performance_impact: "Description of performance implications"
+  
+implementation:
+  files_affected: 
+    - "list/of/files/modified"
+    - "path/to/config/files"
+  code_patterns: "Key patterns or conventions established"
+  dependencies: "New dependencies or changes"
+  
+validation:
+  testing_strategy: "How the decision was validated"
+  success_criteria: "Metrics for success"
+  rollback_plan: "How to revert if needed"
+  
+metadata:
+  related_memories: ["memory_id_1", "memory_id_2"]
+  related_issues: ["issue_number_1", "issue_number_2"]  
+  documentation_updated: "true|false"
+  team_approved: "true|false"

@@ -1,0 +1,54 @@
+# ReAgent Sydney - Grafana Datasource Configuration
+
+apiVersion: 1
+
+datasources:
+  # Primary Prometheus datasource
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      httpMethod: POST
+      prometheusType: Prometheus
+      prometheusVersion: 2.40.0
+      timeInterval: 15s
+      queryTimeout: 60s
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          url: http://jaeger:16686/trace/${__value.raw}
+    secureJsonData: {}
+
+  # TimescaleDB for historical data analysis
+  - name: TimescaleDB
+    type: postgres
+    access: proxy
+    url: postgres:5432
+    database: reagent
+    user: reagent
+    secureJsonData:
+      password: ${POSTGRES_PASSWORD}
+    jsonData:
+      sslmode: disable
+      maxOpenConns: 10
+      maxIdleConns: 2
+      connMaxLifetime: 14400
+      postgresVersion: 1500
+      timescaledb: true
+    editable: true
+
+  # Loki for log aggregation (if implemented)
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    editable: true
+    jsonData:
+      maxLines: 1000
+      derivedFields:
+        - name: TraceID
+          label: trace_id
+          url: http://jaeger:16686/trace/${__value.raw}
+          urlDisplayLabel: View Trace

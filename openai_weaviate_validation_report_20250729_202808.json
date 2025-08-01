@@ -1,0 +1,12 @@
+{
+  "timestamp": "2025-07-29T20:28:08.031522",
+  "openai_connectivity": {},
+  "embedding_generation": {},
+  "weaviate_integration": {},
+  "dimension_validation": {},
+  "rate_limiting": {},
+  "performance_metrics": {},
+  "error_handling": {},
+  "production_readiness": {},
+  "initialization_error": "'Settings' object has no attribute 'cache'"
+}

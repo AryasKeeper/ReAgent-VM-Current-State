@@ -1,0 +1,72 @@
+{
+  "timestamp": "2025-07-29T20:35:52.754965",
+  "tests": {
+    "openai_connectivity": {
+      "status": "failed",
+      "api_key_configured": false,
+      "authentication_valid": false,
+      "response_time_ms": 0,
+      "test_embedding_success": false,
+      "embedding_dimensions": 0,
+      "error": "OPENAI_API_KEY environment variable not set"
+    },
+    "embedding_consistency": {
+      "status": "failed",
+      "dimension_consistency": false,
+      "quality_metrics": {},
+      "generation_times": [],
+      "error": "The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/emergence-admin/Desktop/ReAgent/validate_openai_embeddings.py\", line 109, in test_embedding_consistency\n    client = AsyncOpenAI(api_key=self.api_key)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/emergence-admin/Desktop/Arya/venv/lib/python3.12/site-packages/openai/_client.py\", line 349, in __init__\n    raise OpenAIError(\nopenai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable\n"
+    },
+    "weaviate_connectivity": {
+      "status": "passed",
+      "weaviate_accessible": true,
+      "response_time_ms": 29.14,
+      "version_info": {
+        "version": "1.21.2",
+        "modules": [
+          "generative-openai",
+          "text2vec-openai"
+        ]
+      },
+      "openai_module_available": true,
+      "error": null
+    },
+    "end_to_end_integration": {
+      "status": "failed",
+      "schema_creation": false,
+      "data_ingestion": false,
+      "vector_search": false,
+      "total_time_ms": 0,
+      "error": "The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/emergence-admin/Desktop/ReAgent/validate_openai_embeddings.py\", line 262, in test_end_to_end_integration\n    openai_client = AsyncOpenAI(api_key=self.api_key)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/emergence-admin/Desktop/Arya/venv/lib/python3.12/site-packages/openai/_client.py\", line 349, in __init__\n    raise OpenAIError(\nopenai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable\n"
+    },
+    "rate_limiting": {
+      "status": "failed",
+      "concurrent_requests_success": false,
+      "rate_limit_detection": false,
+      "error_handling": false,
+      "performance_metrics": {},
+      "error": "The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable"
+    }
+  },
+  "summary": {
+    "overall_status": "not_ready",
+    "passed_tests": 1,
+    "total_tests": 5,
+    "critical_issues": [
+      "OpenAI API authentication failed",
+      "Embedding dimensions are inconsistent",
+      "End-to-end integration failed"
+    ],
+    "warnings": [],
+    "recommendations": [
+      "Set up comprehensive monitoring for API usage and costs",
+      "Implement caching for frequently generated embeddings",
+      "Configure proper error handling and retry mechanisms",
+      "Monitor embedding quality and search relevance in production",
+      "Address critical issues before production deployment"
+    ],
+    "readiness_score": 20
+  }
+}

@@ -1,0 +1,101 @@
+# ReAgent Sydney - Minimal Recovery Configuration
+# Essential services only for immediate system recovery
+
+services:
+  # PostgreSQL with TimescaleDB
+  postgres:
+    image: timescale/timescaledb:latest-pg15
+    environment:
+      POSTGRES_DB: reagent
+      POSTGRES_USER: reagent
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-reagent_dev_password}
+      TIMESCALEDB_TELEMETRY: off
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reagent -d reagent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Weaviate vector database
+  weaviate:
+    image: semitechnologies/weaviate:1.21.2
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      DEFAULT_VECTORIZER_MODULE: 'text2vec-openai'
+      ENABLE_MODULES: 'text2vec-openai,generative-openai'
+      OPENAI_APIKEY: ${OPENAI_API_KEY:-sk-placeholder}
+      CLUSTER_HOSTNAME: 'node1'
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/v1/.well-known/ready || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # FastAPI backend (essential service)
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile.api
+    environment:
+      DATABASE_URL: postgresql+asyncpg://reagent:${POSTGRES_PASSWORD:-reagent_dev_password}@postgres:5432/reagent
+      REDIS_URL: redis://redis:6379/0
+      WEAVIATE_URL: http://weaviate:8080
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-sk-placeholder}
+      DOMAIN_API_KEY: ${DOMAIN_API_KEY:-placeholder}
+      REA_API_KEY: ${REA_API_KEY:-placeholder}
+      ENVIRONMENT: development
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      weaviate:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health", "||", "exit", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  weaviate_data:
+
+networks:
+  default:
+    name: reagent-network

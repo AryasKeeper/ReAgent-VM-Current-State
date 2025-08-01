@@ -1,0 +1,34 @@
+{
+  "mcpServers": {
+    "cipher-reagent": {
+      "type": "stdio",
+      "command": "cipher",
+      "args": ["--mode", "mcp", "--agent", "/home/emergence-admin/memAgent/cipher.yml"],
+      "env": {
+        "OPENAI_API_KEY": "$OPENAI_API_KEY",
+        "MCP_SERVER_MODE": "aggregator",
+        "AGGREGATOR_CONFLICT_RESOLUTION": "prefix",
+        "VECTOR_STORE_TYPE": "qdrant",
+        "VECTOR_STORE_COLLECTION": "reagent_development_memory",
+        "VECTOR_STORE_DIMENSION": "1536"
+      },
+      "description": "ReAgent Agentic Dev Stack Memory Layer - maintains context across Cascade, Claude, and Gemini CLI interactions"
+    }
+  },
+  "reagent_memory_protocols": {
+    "claude_role": "Frontline Hands-On Developer",
+    "specialization": "Rapid iteration, coding, deployment",
+    "memory_focus": [
+      "development_progress",
+      "bugs_and_fixes", 
+      "api_integration",
+      "agent_coordination"
+    ],
+    "auto_store_triggers": [
+      "code_changes",
+      "bug_discoveries",
+      "integration_issues",
+      "deployment_status"
+    ]
+  }
+}

@@ -1,0 +1,189 @@
+{
+  "timestamp": "2025-07-30T17:01:46Z",
+  "report_type": "production_health_check",
+  "overall_status": "unhealthy",
+  "services": {
+    "infrastructure": {
+      "postgres": "[2025-07-30 10:01:49] [INFO] Checking Docker service: postgres
+[2025-07-30 10:01:49] [ERROR] [0;31m✗ postgres container is not running[0m
+unhealthy",
+      "redis": "[2025-07-30 10:01:49] [INFO] Checking Docker service: redis
+[2025-07-30 10:01:49] [ERROR] [0;31m✗ redis container is not running[0m
+unhealthy",
+      "weaviate": "[2025-07-30 10:01:49] [INFO] Checking Docker service: weaviate
+[2025-07-30 10:01:49] [ERROR] [0;31m✗ weaviate container is not running[0m
+unhealthy"
+    },
+    "application": {
+      "api": "[2025-07-30 10:01:49] [INFO] Checking Docker service: api
+[2025-07-30 10:01:49] [ERROR] [0;31m✗ api container is not running[0m
+unhealthy",
+      "agents": "[2025-07-30 10:01:49] [INFO] Checking Docker service: agents
+[2025-07-30 10:01:49] [ERROR] [0;31m✗ agents container is not running[0m
+unhealthy",
+      "celery_worker": "[2025-07-30 10:01:49] [INFO] Checking Docker service: celery-worker
+[2025-07-30 10:01:49] [ERROR] [0;31m✗ celery-worker container is not running[0m
+unhealthy",
+      "celery_beat": "[2025-07-30 10:01:49] [INFO] Checking Docker service: celery-beat
+[2025-07-30 10:01:49] [ERROR] [0;31m✗ celery-beat container is not running[0m
+unhealthy"
+    },
+    "frontend": {
+      "web": "[2025-07-30 10:01:49] [INFO] Checking Docker service: frontend
+[2025-07-30 10:01:49] [ERROR] [0;31m✗ frontend container is not running[0m
+unhealthy"
+    },
+    "monitoring": {
+      "prometheus": "[2025-07-30 10:01:49] [INFO] Checking Docker service: prometheus
+[2025-07-30 10:01:49] [ERROR] [0;31m✗ prometheus container is not running[0m
+unhealthy",
+      "grafana": "[2025-07-30 10:01:49] [INFO] Checking Docker service: grafana
+[2025-07-30 10:01:49] [ERROR] [0;31m✗ grafana container is not running[0m
+unhealthy"
+    }
+  },
+  "connectivity_tests": {
+    "postgres_accessible": [2025-07-30 10:01:49] [INFO] Testing PostgreSQL connectivity...
+[2025-07-30 10:01:49] [ERROR] [0;31m✗ PostgreSQL connection failed[0m
+false,
+    "redis_accessible": [2025-07-30 10:01:49] [INFO] Testing Redis connectivity...
+[2025-07-30 10:01:49] [ERROR] [0;31m✗ Redis connection failed[0m
+false,
+    "weaviate_accessible": [2025-07-30 10:01:49] [INFO] Testing Weaviate connectivity...
+[2025-07-30 10:01:49] [ERROR] [0;31m✗ Weaviate connection failed[0m
+false
+  },
+  "containers": [
+  {
+    "Command": "\"uvicorn reagent.api…\"",
+    "CreatedAt": "2025-07-30 09:56:51 -0700 PDT",
+    "ID": "022085f50a97",
+    "Image": "reagent-api-fixed",
+    "Labels": "",
+    "LocalVolumes": "0",
+    "Mounts": "",
+    "Names": "reagent-api-test",
+    "Networks": "reagent-network",
+    "Platform": null,
+    "Ports": "0.0.0.0:8000->8000/tcp",
+    "RunningFor": "4 minutes ago",
+    "Size": "0B",
+    "State": "running",
+    "Status": "Up 4 minutes (unhealthy)"
+  },
+  {
+    "Command": "\"docker-entrypoint.s…\"",
+    "CreatedAt": "2025-07-30 09:54:49 -0700 PDT",
+    "ID": "5d0e77b032ff",
+    "Image": "timescale/timescaledb:latest-pg15",
+    "Labels": "com.docker.compose.config-hash=55bf9783f11458d0cd6cdaa85c4167b53b7ae0115fb417ad8c6b2f89bb2e4af1,com.docker.compose.container-number=1,com.docker.compose.depends_on=,com.docker.compose.image=sha256:65e752eeed4cd7094cb9ddd06cf445fdda03dc0758a3a22ba5a416c28279470e,com.docker.compose.oneoff=False,com.docker.compose.project.config_files=/home/emergence-admin/Desktop/ReAgent/docker-compose.yml,/home/emergence-admin/Desktop/ReAgent/docker-compose.override.yml,com.docker.compose.project.working_dir=/home/emergence-admin/Desktop/ReAgent,com.docker.compose.project=reagent,com.docker.compose.replace=12f025b671c3b5e9f8d2f90ede4e8d6955caa551bb5b634bff471d905b44c1f8,com.docker.compose.service=postgres,com.docker.compose.version=2.38.2,maintainer=Timescale https://www.timescale.com",
+    "LocalVolumes": "1",
+    "Mounts": "/home/emergenc…,/home/emergenc…,reagent-postgr…",
+    "Names": "reagent-postgres-dev",
+    "Networks": "reagent-dev-network",
+    "Platform": null,
+    "Ports": "0.0.0.0:5432->5432/tcp",
+    "RunningFor": "6 minutes ago",
+    "Size": "0B",
+    "State": "running",
+    "Status": "Up 6 minutes (healthy)"
+  },
+  {
+    "Command": "\"docker-entrypoint.s…\"",
+    "CreatedAt": "2025-07-30 09:54:49 -0700 PDT",
+    "ID": "c6ccdff45b83",
+    "Image": "redis:7-alpine",
+    "Labels": "com.docker.compose.config-hash=a941cee5e3b7eea4ce6dd205094e4ded9785a3ef4c9a94303a3ac9c3e703e167,com.docker.compose.container-number=1,com.docker.compose.depends_on=,com.docker.compose.image=sha256:f218e591b571a4129aa29a8566b597d849fba21af7be853d31b03122b20db5e9,com.docker.compose.oneoff=False,com.docker.compose.project.config_files=/home/emergence-admin/Desktop/ReAgent/docker-compose.yml,/home/emergence-admin/Desktop/ReAgent/docker-compose.override.yml,com.docker.compose.project.working_dir=/home/emergence-admin/Desktop/ReAgent,com.docker.compose.project=reagent,com.docker.compose.replace=379fb938f5bd1f997f11e2f9d564951f5878196c199888f061adf0cc934edbc8,com.docker.compose.service=redis,com.docker.compose.version=2.38.2",
+    "LocalVolumes": "1",
+    "Mounts": "reagent-redis-…",
+    "Names": "reagent-redis-dev",
+    "Networks": "reagent-dev-network",
+    "Platform": null,
+    "Ports": "0.0.0.0:6379->6379/tcp",
+    "RunningFor": "6 minutes ago",
+    "Size": "0B",
+    "State": "running",
+    "Status": "Up 6 minutes (healthy)"
+  },
+  {
+    "Command": "\"/bin/weaviate --hos…\"",
+    "CreatedAt": "2025-07-30 09:54:49 -0700 PDT",
+    "ID": "e246b8960b27",
+    "Image": "semitechnologies/weaviate:1.21.2",
+    "Labels": "com.docker.compose.config-hash=14c7fde475162ce634b96814381b6bc99053d36e80434dd1349bb48b3fa2c9e6,com.docker.compose.container-number=1,com.docker.compose.depends_on=,com.docker.compose.image=sha256:7ed8d24aa0aa0d9ea0e94156583996b43bec0a82bcfdd36586612bdbba178fc5,com.docker.compose.oneoff=False,com.docker.compose.project.config_files=/home/emergence-admin/Desktop/ReAgent/docker-compose.yml,/home/emergence-admin/Desktop/ReAgent/docker-compose.override.yml,com.docker.compose.project.working_dir=/home/emergence-admin/Desktop/ReAgent,com.docker.compose.project=reagent,com.docker.compose.replace=15448136809db8f26bc3bc26bd70a302e6bfae0b5c32fd7a8d94b10662cc5625,com.docker.compose.service=weaviate,com.docker.compose.version=2.38.2",
+    "LocalVolumes": "1",
+    "Mounts": "reagent-weavia…,/home/emergenc…",
+    "Names": "reagent-weaviate-dev",
+    "Networks": "reagent-dev-network",
+    "Platform": null,
+    "Ports": "",
+    "RunningFor": "6 minutes ago",
+    "Size": "0B",
+    "State": "restarting",
+    "Status": "Restarting (1) 50 seconds ago"
+  }
+],
+  "resource_usage": [
+  {
+    "BlockIO": "4.41MB / 16.4kB",
+    "CPUPerc": "0.09%",
+    "Container": "022085f50a97",
+    "ID": "022085f50a97",
+    "MemPerc": "0.30%",
+    "MemUsage": "34.7MiB / 11.43GiB",
+    "Name": "reagent-api-test",
+    "NetIO": "415B / 318B",
+    "PIDs": "4"
+  },
+  {
+    "BlockIO": "2.81MB / 389kB",
+    "CPUPerc": "0.00%",
+    "Container": "5d0e77b032ff",
+    "ID": "5d0e77b032ff",
+    "MemPerc": "1.08%",
+    "MemUsage": "22.2MiB / 2GiB",
+    "Name": "reagent-postgres-dev",
+    "NetIO": "1.06kB / 126B",
+    "PIDs": "8"
+  },
+  {
+    "BlockIO": "938kB / 0B",
+    "CPUPerc": "0.70%",
+    "Container": "c6ccdff45b83",
+    "ID": "c6ccdff45b83",
+    "MemPerc": "0.79%",
+    "MemUsage": "4.062MiB / 512MiB",
+    "Name": "reagent-redis-dev",
+    "NetIO": "981B / 126B",
+    "PIDs": "6"
+  },
+  {
+    "BlockIO": "0B / 0B",
+    "CPUPerc": "0.00%",
+    "Container": "e246b8960b27",
+    "ID": "e246b8960b27",
+    "MemPerc": "0.00%",
+    "MemUsage": "0B / 0B",
+    "Name": "reagent-weaviate-dev",
+    "NetIO": "0B / 0B",
+    "PIDs": "0"
+  }
+],
+  "endpoints": {
+    "api_health": "[2025-07-30 10:01:49] [INFO] Checking health of API...
+[2025-07-30 10:01:49] [ERROR] [0;31m✗ API is unhealthy[0m
+unhealthy",
+    "grafana_health": "[2025-07-30 10:01:50] [INFO] Checking health of Grafana...
+[2025-07-30 10:01:50] [ERROR] [0;31m✗ Grafana is unhealthy[0m
+unhealthy",
+    "prometheus_health": "[2025-07-30 10:01:50] [INFO] Checking health of Prometheus...
+[2025-07-30 10:01:50] [ERROR] [0;31m✗ Prometheus is unhealthy[0m
+unhealthy"
+  },
+  "recommendations": [
+    "Monitor service restart patterns",
+    "Ensure proper resource allocation",
+    "Validate health check endpoints",
+    "Check dependency startup sequences"
+  ]
+}

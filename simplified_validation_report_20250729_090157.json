@@ -1,0 +1,85 @@
+{
+  "timestamp": "2025-07-29T09:01:57.241415",
+  "summary": {
+    "total_tests": 5,
+    "passed_tests": 3,
+    "failed_tests": 2,
+    "success_rate": 60.0,
+    "total_time": 5.629563331604004
+  },
+  "test_results": {
+    "weaviate": {
+      "status": "fail",
+      "error": "Weaviate did not start up in 5 seconds. Either the Weaviate URL https://reagent-sydney-prod-cluster.weaviate.network is wrong or Weaviate did not start up in the interval given in 'startup_period'."
+    },
+    "basic_matching": {
+      "status": "pass",
+      "matches": 2,
+      "sample_match": {
+        "buyer": "Test Buyer 1",
+        "property": "123 Test St",
+        "score": 0.9375
+      }
+    },
+    "vector_ops": {
+      "status": "fail",
+      "error": "Weaviate client not connected. Call connect() first."
+    },
+    "matching_logic": {
+      "status": "pass",
+      "total_matches": 3,
+      "high_quality_matches": 2,
+      "avg_match_score": 0.88,
+      "sample_matches": [
+        {
+          "buyer_id": "buyer_1",
+          "buyer_name": "Sarah - First Home Buyer",
+          "property_id": "prop_1",
+          "property_address": "123 Crown Street, Surry Hills",
+          "match_score": 1.0,
+          "reasons": [
+            "Price within budget",
+            "Apartment matches preference",
+            "Located in preferred suburb: Surry Hills",
+            "2 bedrooms meets requirements",
+            "Has required feature: modern"
+          ],
+          "concerns": [],
+          "price": 850000,
+          "match_quality": "Excellent"
+        },
+        {
+          "buyer_id": "buyer_1",
+          "buyer_name": "Sarah - First Home Buyer",
+          "property_id": "prop_3",
+          "property_address": "789 Victoria Road, Parramatta",
+          "match_score": 0.64,
+          "reasons": [
+            "Price slightly over budget but manageable",
+            "Apartment matches preference",
+            "Has required feature: modern"
+          ],
+          "concerns": [
+            "Not in preferred suburb",
+            "Bedroom count doesn't meet requirements"
+          ],
+          "price": 950000,
+          "match_quality": "Fair"
+        }
+      ]
+    },
+    "performance": {
+      "status": "pass",
+      "properties_per_second": 1025502.2,
+      "queries_per_second": 953.4,
+      "memory_estimate_mb": 0.0,
+      "performance_score": 1.0
+    }
+  },
+  "assessment": "\ud83d\udfe0 FAIR - Significant work needed",
+  "recommendations": [
+    "\ud83d\udee0\ufe0f Fix critical system failures",
+    "\ud83d\udd0d Debug infrastructure issues",
+    "\ud83d\udcc8 Improve matching accuracy"
+  ]
+}

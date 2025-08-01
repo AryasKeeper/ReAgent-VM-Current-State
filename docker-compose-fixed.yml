@@ -1,0 +1,272 @@
+version: '3.8'
+
+services:
+  # PostgreSQL with TimescaleDB extension
+  postgres:
+    image: timescale/timescaledb:latest-pg16
+    container_name: reagent-postgres
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_DB: reagent
+      POSTGRES_USER: reagent_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - reagent-dev-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reagent_user -d reagent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+
+  # Redis cache and message broker
+  redis:
+    image: redis:7-alpine
+    container_name: reagent-redis
+    restart: unless-stopped
+    env_file: .env
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - reagent-dev-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  # Weaviate vector database - FIXED CONFIGURATION
+  weaviate:
+    env_file: .env
+    image: cr.weaviate.io/semitechnologies/weaviate:1.24.1
+    container_name: reagent-weaviate
+    restart: unless-stopped
+    environment:
+      # CRITICAL FIX: Complete authentication bypass for development
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      AUTHENTICATION_OIDC_ENABLED: 'false'
+      AUTHENTICATION_APIKEY_ENABLED: 'false'
+      # OpenAI integration configuration - FIXED
+      OPENAI_APIKEY: '${OPENAI_API_KEY}'
+      DEFAULT_VECTORIZER_MODULE: 'text2vec-openai'
+      ENABLE_MODULES: 'text2vec-openai,text2vec-cohere,text2vec-huggingface,qna-openai'
+      # Performance and persistence settings
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      QUERY_DEFAULTS_LIMIT: 25
+      QUERY_MAXIMUM_RESULTS: 10000
+      CLUSTER_HOSTNAME: 'node1'
+      # Memory and performance optimization
+      GOMEMLIMIT: '2GB'
+      GOMAXPROCS: '2'
+      LOG_LEVEL: 'info'
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+    networks:
+      - reagent-dev-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/.well-known/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2.0'
+
+  # FastAPI backend service
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: reagent-api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Database configuration
+      DATABASE_URL: postgresql://reagent_user:${POSTGRES_PASSWORD}@postgres:5432/reagent
+      POSTGRES_USER: reagent_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: reagent
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      # Cache configuration
+      REDIS_URL: redis://redis:6379
+      # Vector database configuration
+      WEAVIATE_URL: http://weaviate:8080
+      # API keys
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      CORELOGIC_CLIENT_ID: ${CORELOGIC_CLIENT_ID}
+      CORELOGIC_CLIENT_SECRET: ${CORELOGIC_CLIENT_SECRET}
+      DOMAIN_API_KEY: ${DOMAIN_API_KEY}
+      # Application settings
+      ENVIRONMENT: development
+      DEBUG: true
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    networks:
+      - reagent-dev-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      weaviate:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 45s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+
+  # AI Agents service
+  agents:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.agents
+    container_name: reagent-agents
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Database configuration
+      DATABASE_URL: postgresql://reagent_user:${POSTGRES_PASSWORD}@postgres:5432/reagent
+      # Cache configuration
+      REDIS_URL: redis://redis:6379
+      # Vector database configuration
+      WEAVIATE_URL: http://weaviate:8080
+      # API keys
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      DOMAIN_API_KEY: ${DOMAIN_API_KEY}
+      CORELOGIC_CLIENT_ID: ${CORELOGIC_CLIENT_ID}
+      CORELOGIC_CLIENT_SECRET: ${CORELOGIC_CLIENT_SECRET}
+      # Application settings
+      ENVIRONMENT: development
+      DEBUG: true
+    volumes:
+      - ./backend:/app
+    networks:
+      - reagent-dev-network
+    depends_on:
+      api:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2.0'
+
+  # Celery worker for background tasks
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: reagent-celery-worker
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Database configuration
+      DATABASE_URL: postgresql://reagent_user:${POSTGRES_PASSWORD}@postgres:5432/reagent
+      # Cache configuration
+      REDIS_URL: redis://redis:6379
+      # Celery configuration
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      # API keys
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    volumes:
+      - ./backend:/app
+    networks:
+      - reagent-dev-network
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    command: celery -A app.tasks.celery_app worker --loglevel=info --concurrency=4
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+
+  # Celery beat scheduler
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: reagent-celery-beat
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Database configuration
+      DATABASE_URL: postgresql://reagent_user:${POSTGRES_PASSWORD}@postgres:5432/reagent
+      # Cache configuration
+      REDIS_URL: redis://redis:6379
+      # Celery configuration
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    volumes:
+      - ./backend:/app
+    networks:
+      - reagent-dev-network
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    command: celery -A app.tasks.celery_app beat --loglevel=info
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+networks:
+  reagent-dev-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  weaviate_data:
+    driver: local

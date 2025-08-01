@@ -1,0 +1,71 @@
+{
+  "deployment_timestamp": "2025-07-29T02:39:19.519942",
+  "weaviate_url": "http://localhost:8080",
+  "force_recreate": true,
+  "schemas_deployed": {
+    "Property": {
+      "class_name": "Property",
+      "status": "failed",
+      "deployment_time": null,
+      "pre_deployment_stats": {
+        "object_count": 0,
+        "exists": true
+      },
+      "post_deployment_stats": {},
+      "validation_passed": false,
+      "performance_metrics": {},
+      "errors": [
+        "Schema creation failed"
+      ]
+    },
+    "BuyerProfile": {
+      "class_name": "BuyerProfile",
+      "status": "failed",
+      "deployment_time": null,
+      "pre_deployment_stats": {
+        "object_count": 0,
+        "exists": true
+      },
+      "post_deployment_stats": {},
+      "validation_passed": false,
+      "performance_metrics": {},
+      "errors": [
+        "Schema creation failed"
+      ]
+    },
+    "PropertyMatch": {
+      "class_name": "PropertyMatch",
+      "status": "failed",
+      "deployment_time": null,
+      "pre_deployment_stats": {
+        "object_count": 0,
+        "exists": true
+      },
+      "post_deployment_stats": {},
+      "validation_passed": false,
+      "performance_metrics": {},
+      "errors": [
+        "Schema creation failed"
+      ]
+    }
+  },
+  "performance_metrics": {
+    "vector_search_available": false,
+    "openai_integration": false,
+    "transformers_available": false,
+    "schema_access_times": {
+      "full_schema_retrieval": 0.002907991409301758
+    },
+    "errors": []
+  },
+  "validation_results": {},
+  "errors": [],
+  "summary": {
+    "total_schemas": 3,
+    "successful_deployments": 0,
+    "failed_deployments": 3,
+    "skipped_deployments": 0,
+    "total_errors": 0,
+    "deployment_success_rate": 0.0
+  }
+}

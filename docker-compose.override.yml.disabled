@@ -1,0 +1,168 @@
+# ReAgent Sydney - Production Override Configuration
+# Use: docker compose -f docker-compose.yml -f docker-compose.override.yml up
+
+services:
+  # Production API configuration
+  api:
+    environment:
+      ENVIRONMENT: production
+      DEBUG: false
+      LOG_LEVEL: INFO
+      RELOAD: false
+      DEV_MODE: false
+    volumes:
+      # Remove development volumes, use built-in code
+      - ./logs:/app/logs
+      - ./data/ssl:/app/ssl:ro
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.2'
+    command: ["uvicorn", "src.reagent.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+
+  # Production agents configuration
+  agents:
+    environment:
+      ENVIRONMENT: production
+      LOG_LEVEL: INFO
+      CREWAI_MAX_WORKERS: 6
+      CREWAI_TASK_TIMEOUT: 600
+    volumes:
+      # Remove development volumes
+      - ./logs:/app/logs
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.5'
+        reservations:
+          memory: 512M
+          cpus: '0.3'
+
+  # Production Celery worker configuration
+  celery-worker:
+    environment:
+      ENVIRONMENT: production
+      LOG_LEVEL: INFO
+    volumes:
+      # Remove development volumes
+      - ./logs:/app/logs
+    command: ["celery", "-A", "src.reagent.core.celery", "worker", "--loglevel=info", "--concurrency=4", "--max-tasks-per-child=1000"]
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.8'
+        reservations:
+          memory: 256M
+          cpus: '0.2'
+
+  # Production Celery beat configuration
+  celery-beat:
+    environment:
+      ENVIRONMENT: production
+      LOG_LEVEL: INFO
+    volumes:
+      # Remove development volumes
+      - ./logs:/app/logs
+      - celery_beat_schedule:/app/celerybeat-schedule
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.2'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+
+  # Production database configuration
+  postgres:
+    environment:
+      POSTGRES_SHARED_PRELOAD_LIBRARIES: 'timescaledb,pg_stat_statements'
+      POSTGRES_MAX_CONNECTIONS: 200
+      POSTGRES_SHARED_BUFFERS: '256MB'
+      POSTGRES_EFFECTIVE_CACHE_SIZE: '1GB'
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+  # Production Redis configuration
+  redis:
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+
+  # Production Weaviate configuration
+  weaviate:
+    environment:
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'false'
+      AUTHENTICATION_APIKEY_ENABLED: 'true'
+      AUTHENTICATION_APIKEY_ALLOWED_KEYS: '${WEAVIATE_API_KEY}'
+      AUTHENTICATION_APIKEY_USERS: 'reagent-admin'
+      AUTHENTICATION_OIDC_ENABLED: 'false'
+      LIMIT_RESOURCES: 'true'
+      QUERY_MAXIMUM_RESULTS: 10000
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.3'
+
+  # Add Nginx reverse proxy for production
+  nginx:
+    image: nginx:alpine
+    container_name: reagent-nginx-prod
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./data/ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - reagent-dev
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.2'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

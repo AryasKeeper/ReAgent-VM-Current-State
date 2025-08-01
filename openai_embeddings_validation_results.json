@@ -1,0 +1,171 @@
+{
+  "start_time": "2025-07-29T09:39:28.304705",
+  "tests": {
+    "openai_connectivity": {
+      "status": "FAIL",
+      "error": "'Settings' object has no attribute 'cache'",
+      "api_accessible": false
+    },
+    "openai_embeddings_api": {
+      "status": "PASS",
+      "duration": 0.48429012298583984,
+      "model_used": "text-embedding-3-small",
+      "embedding_dimension": 1536,
+      "texts_processed": 3,
+      "consistent_dimensions": true,
+      "tokens_used": 29,
+      "sample_embedding_preview": [
+        -0.013911568559706211,
+        -0.00759155722334981,
+        0.017284397035837173,
+        0.00043608350097201765,
+        -0.007338325493037701
+      ]
+    },
+    "property_vectorization": {
+      "status": "PASS",
+      "duration": 0.0060024261474609375,
+      "embedding_dimension": 31,
+      "is_normalized": true,
+      "metadata": {
+        "model_name": "PropertyVectorizer",
+        "model_version": "1.0.0",
+        "feature_count": 6,
+        "normalization_method": "l2"
+      },
+      "sample_values": [
+        0.1217977641757083,
+        0.2759814946247823,
+        0.009247716701179473,
+        0.2313170503421296,
+        0.35532573017224206
+      ]
+    },
+    "buyer_vectorization": {
+      "status": "PASS",
+      "duration": 0.0003962516784667969,
+      "embedding_dimension": 30,
+      "is_normalized": true,
+      "metadata": {
+        "model_name": "BuyerProfileVectorizer",
+        "model_version": "1.0.0",
+        "feature_count": 5,
+        "normalization_method": "l2"
+      },
+      "sample_values": [
+        0.2962675067667864,
+        0.2831716304303785,
+        0.28038975674340477,
+        0.04812453973752372,
+        0.2026577840057943
+      ]
+    },
+    "weaviate_connectivity": {
+      "status": "PASS",
+      "duration": 0.024684906005859375,
+      "weaviate_ready": true,
+      "weaviate_live": true,
+      "weaviate_url": "http://localhost:8080",
+      "health_details": {
+        "status": "connected",
+        "ready": true,
+        "live": true,
+        "url": "http://localhost:8080",
+        "meta": {
+          "hostname": "http://[::]:8080",
+          "modules": {
+            "generative-openai": {
+              "documentationHref": "https://platform.openai.com/docs/api-reference/completions",
+              "name": "Generative Search - OpenAI"
+            },
+            "text2vec-openai": {
+              "documentationHref": "https://platform.openai.com/docs/guides/embeddings/what-are-embeddings",
+              "name": "OpenAI Module"
+            }
+          },
+          "version": "1.21.2"
+        }
+      }
+    },
+    "schema_compatibility": {
+      "status": "PASS",
+      "duration": 0.16195058822631836,
+      "property_schema_created": true,
+      "buyer_schema_created": true,
+      "schemas_tested": [
+        "Property",
+        "BuyerProfile"
+      ]
+    },
+    "embedding_ingestion": {
+      "status": "PASS",
+      "duration": 0.04102325439453125,
+      "property_object_created": true,
+      "buyer_object_created": true,
+      "property_id": "b16c7a5f-8257-4719-af67-f2a73c6f4fa3",
+      "buyer_id": "e2e8bfdf-d614-41d4-a2ec-da0f8dee3bf4",
+      "property_embedding_dim": 31,
+      "buyer_embedding_dim": 30
+    },
+    "vector_search": {
+      "status": "FAIL",
+      "error": "'NoneType' object is not iterable"
+    },
+    "dimension_compatibility": {
+      "status": "FAIL",
+      "duration": 0.0005939006805419922,
+      "property_dimension": 31,
+      "buyer_dimension": 30,
+      "property_consistent": true,
+      "buyer_consistent": true,
+      "cross_compatible": false,
+      "property_dims_tested": [
+        31,
+        31,
+        31
+      ],
+      "buyer_dims_tested": [
+        30,
+        30,
+        30
+      ]
+    },
+    "rate_limiting": {
+      "status": "FAIL",
+      "error": "'Settings' object has no attribute 'cache'"
+    },
+    "performance_benchmarks": {
+      "status": "PASS",
+      "avg_property_time": 5.626678466796875e-05,
+      "avg_buyer_time": 8.668899536132813e-05,
+      "performance_acceptable": true
+    }
+  },
+  "performance_metrics": {
+    "property_vectorization": {
+      "avg_time_seconds": 5.626678466796875e-05,
+      "min_time_seconds": 4.7206878662109375e-05,
+      "max_time_seconds": 7.677078247070312e-05,
+      "samples": 5
+    },
+    "buyer_vectorization": {
+      "avg_time_seconds": 8.668899536132813e-05,
+      "min_time_seconds": 5.507469177246094e-05,
+      "max_time_seconds": 0.0001354217529296875,
+      "samples": 5
+    },
+    "performance_targets": {
+      "property_vectorization_target": "< 0.1s",
+      "buyer_vectorization_target": "< 0.1s",
+      "property_meets_target": true,
+      "buyer_meets_target": true
+    }
+  },
+  "errors": [
+    "OpenAI connectivity: 'Settings' object has no attribute 'cache'",
+    "Vector search: 'NoneType' object is not iterable",
+    "Rate limiting: 'Settings' object has no attribute 'cache'"
+  ],
+  "warnings": [],
+  "end_time": "2025-07-29T09:39:29.776225"
+}

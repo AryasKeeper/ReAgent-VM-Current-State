@@ -1,18 +1,23 @@
 """Pytest configuration and fixtures for ReAgent Sydney tests."""
 
 import asyncio
+import sys
+import os
 import pytest
 import pytest_asyncio
 from typing import AsyncGenerator, Generator
 from unittest.mock import AsyncMock, MagicMock
 
+# Add src directory to path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from src.config.settings import Settings
-from src.core.database import get_db_session
-from src.core.cache import CacheManager
-from src.models.base import Base
+from reagent.core.config import Settings
+from reagent.core.database import get_db_session
+from reagent.core.cache import CacheManager
+from reagent.data.models.base import Base
 
 
 # Test settings

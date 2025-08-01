@@ -1,0 +1,209 @@
+# ReAgent Health Monitor - Production Monitoring Service
+# Provides real-time health monitoring, service recovery, and feature flag management
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    postgresql-client \
+    redis-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install additional health monitoring dependencies
+RUN pip install --no-cache-dir \
+    fastapi[all] \
+    prometheus-client \
+    aioredis \
+    psycopg2-binary \
+    docker \
+    asyncio-mqtt
+
+# Copy application code
+COPY src/ ./src/
+COPY config/ ./config/
+
+# Create health monitor application
+RUN mkdir -p /app/health_monitor
+
+# Health monitor entry point
+COPY <<EOF /app/health_monitor/main.py
+"""
+ReAgent Health Monitor - Production Service Health Management
+
+Real-time monitoring, recovery, and feature flag management
+for ReAgent production deployment.
+"""
+
+import asyncio
+import os
+import time
+from datetime import datetime
+from typing import Dict, Any
+
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
+import uvicorn
+
+from src.reagent.utils.monitoring.production_health_monitor import (
+    get_health_monitor, ProductionHealthMonitor
+)
+from src.reagent.services.resilient_service_manager import get_service_manager
+from src.reagent.utils.logging import get_logger
+
+# Initialize FastAPI app
+app = FastAPI(
+    title="ReAgent Health Monitor",
+    description="Production health monitoring and service management",
+    version="1.0.0"
+)
+
+logger = get_logger("health-monitor")
+
+
+@app.on_event("startup")
+async def startup():
+    """Initialize health monitoring system."""
+    logger.info("Starting ReAgent Health Monitor")
+    
+    try:
+        # Initialize health monitor
+        health_monitor = await get_health_monitor()
+        logger.info("Health monitor initialized")
+        
+        # Initialize service manager
+        service_manager = await get_service_manager()
+        logger.info("Service manager initialized")
+        
+        logger.info("Health Monitor startup complete")
+        
+    except Exception as e:
+        logger.error("Health Monitor startup failed", error=str(e))
+        raise
+
+
+@app.get("/health")
+async def health_endpoint():
+    """Health check for the health monitor itself."""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "service": "reagent-health-monitor",
+        "uptime_seconds": time.time() - start_time
+    }
+
+
+@app.get("/system/health")
+async def system_health():
+    """Get comprehensive system health status."""
+    try:
+        health_monitor = await get_health_monitor()
+        system_health = health_monitor.get_system_health_summary()
+        
+        return JSONResponse(content=system_health)
+        
+    except Exception as e:
+        logger.error("System health check failed", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/system/capabilities")
+async def system_capabilities():
+    """Get current system capabilities and limitations."""
+    try:
+        service_manager = await get_service_manager()
+        capabilities = service_manager.get_system_capabilities()
+        
+        return JSONResponse(content=capabilities)
+        
+    except Exception as e:
+        logger.error("System capabilities check failed", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/system/recover/{service_name}")
+async def recover_service(service_name: str):
+    """Attempt to recover a failed service."""
+    try:
+        health_monitor = await get_health_monitor()
+        
+        if service_name == "weaviate":
+            await health_monitor._attempt_weaviate_recovery()
+        elif service_name == "api":
+            await health_monitor._attempt_api_recovery()
+        else:
+            raise HTTPException(status_code=400, detail=f"Recovery not supported for {service_name}")
+        
+        return {"status": "recovery_initiated", "service": service_name}
+        
+    except Exception as e:
+        logger.error(f"Service recovery failed for {service_name}", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/features/flags")
+async def get_feature_flags():
+    """Get current feature flag status."""
+    try:
+        health_monitor = await get_health_monitor()
+        return {"feature_flags": health_monitor.feature_flags}
+        
+    except Exception as e:
+        logger.error("Feature flags check failed", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/features/toggle/{feature_name}")
+async def toggle_feature(feature_name: str, enabled: bool):
+    """Manually toggle a feature flag."""
+    try:
+        health_monitor = await get_health_monitor()
+        
+        if feature_name in health_monitor.feature_flags:
+            health_monitor.feature_flags[feature_name] = enabled
+            logger.info(f"Feature {feature_name} {'enabled' if enabled else 'disabled'}")
+            
+            return {
+                "status": "success",
+                "feature": feature_name,
+                "enabled": enabled
+            }
+        else:
+            raise HTTPException(status_code=404, detail=f"Feature {feature_name} not found")
+            
+    except Exception as e:
+        logger.error(f"Feature toggle failed for {feature_name}", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+if __name__ == "__main__":
+    # Record startup time
+    start_time = time.time()
+    
+    # Run health monitor service
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8001,
+        log_level="info"
+    )
+EOF
+
+# Set executable permissions
+RUN chmod +x /app/health_monitor/main.py
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8001/health || exit 1
+
+# Expose health monitor port
+EXPOSE 8001
+
+# Run health monitor
+CMD ["python", "/app/health_monitor/main.py"]

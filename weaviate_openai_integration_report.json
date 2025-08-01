@@ -1,0 +1,181 @@
+{
+  "validation_timestamp": 1753780226.0989854,
+  "validation_date": "2025-07-29 09:10:26 UTC",
+  "configuration": {
+    "weaviate_url": "http://localhost:8080",
+    "api_key_configured": false,
+    "openai_api_key_configured": true,
+    "environment": "production"
+  },
+  "tests": [
+    {
+      "test_name": "Weaviate Connectivity",
+      "status": "passed",
+      "details": {
+        "health_check": {
+          "status": "connected",
+          "ready": true,
+          "live": true,
+          "url": "http://localhost:8080",
+          "meta": {
+            "hostname": "http://[::]:8080",
+            "modules": {
+              "generative-openai": {
+                "documentationHref": "https://platform.openai.com/docs/api-reference/completions",
+                "name": "Generative Search - OpenAI"
+              },
+              "text2vec-openai": {
+                "documentationHref": "https://platform.openai.com/docs/guides/embeddings/what-are-embeddings",
+                "name": "OpenAI Module"
+              }
+            },
+            "version": "1.21.2"
+          }
+        },
+        "response_time_seconds": 0.007,
+        "weaviate_url": "http://localhost:8080",
+        "api_key_configured": false
+      },
+      "errors": []
+    },
+    {
+      "test_name": "Text2Vec OpenAI Schema",
+      "status": "passed",
+      "details": {
+        "schema_created": true,
+        "creation_time_seconds": 0.06,
+        "vectorizer_used": "text2vec-openai",
+        "embedding_model": "text-embedding-3-small",
+        "expected_dimensions": 1536,
+        "schema": {
+          "class": "TestProperty",
+          "description": "Test property class with OpenAI embeddings",
+          "vectorizer": "text2vec-openai",
+          "moduleConfig": {
+            "text2vec-openai": {
+              "model": "ada",
+              "type": "text"
+            }
+          },
+          "properties": [
+            {
+              "name": "title",
+              "dataType": [
+                "text"
+              ],
+              "description": "Property title"
+            },
+            {
+              "name": "description",
+              "dataType": [
+                "text"
+              ],
+              "description": "Property description"
+            },
+            {
+              "name": "suburb",
+              "dataType": [
+                "text"
+              ],
+              "description": "Property suburb"
+            },
+            {
+              "name": "property_type",
+              "dataType": [
+                "text"
+              ],
+              "description": "Type of property"
+            },
+            {
+              "name": "bedrooms",
+              "dataType": [
+                "int"
+              ],
+              "description": "Number of bedrooms"
+            },
+            {
+              "name": "price",
+              "dataType": [
+                "number"
+              ],
+              "description": "Property price"
+            }
+          ]
+        }
+      },
+      "errors": []
+    },
+    {
+      "test_name": "Automatic Vectorization",
+      "status": "failed",
+      "details": {
+        "objects_inserted": 0,
+        "total_objects_expected": 3,
+        "all_objects_inserted": false,
+        "average_insertion_time": 0.005,
+        "total_objects_in_class": 0,
+        "inserted_objects": []
+      },
+      "errors": [
+        "Only 0/3 objects inserted"
+      ]
+    },
+    {
+      "test_name": "Vector Search Capabilities",
+      "status": "failed",
+      "details": {
+        "total_searches": 3,
+        "searches_with_results": 0,
+        "search_success_rate": 0.0,
+        "average_search_time": 0.006,
+        "meets_performance_requirement": true,
+        "search_results": [
+          {
+            "query": "luxury apartment with ocean views",
+            "results_count": 0,
+            "search_time_seconds": 0.006,
+            "top_result": null
+          },
+          {
+            "query": "family home with swimming pool",
+            "results_count": 0,
+            "search_time_seconds": 0.007,
+            "top_result": null
+          },
+          {
+            "query": "modern unit near city center",
+            "results_count": 0,
+            "search_time_seconds": 0.006,
+            "top_result": null
+          }
+        ]
+      },
+      "errors": [
+        "Low search success rate: 0.00%"
+      ]
+    },
+    {
+      "test_name": "Embedding Quality",
+      "status": "failed",
+      "details": {
+        "luxury_query": "expensive luxury apartment with premium features",
+        "luxury_top_match": "No results",
+        "luxury_matches_expectation": false,
+        "family_query": "spacious family house with kids facilities",
+        "family_top_match": "No results",
+        "family_matches_expectation": false,
+        "semantic_accuracy": 0.0,
+        "embedding_quality_assessment": "poor"
+      },
+      "errors": [
+        "Poor semantic accuracy: 0.00%"
+      ]
+    }
+  ],
+  "summary": {
+    "total_tests": 5,
+    "passed_tests": 2,
+    "failed_tests": 3,
+    "overall_status": "partial"
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "schema_validation": {
+    "weaviate_health": {
+      "status": "connected",
+      "ready": true,
+      "live": true,
+      "url": "http://localhost:8080",
+      "meta": {
+        "hostname": "http://[::]:8080",
+        "modules": {
+          "generative-openai": {
+            "documentationHref": "https://platform.openai.com/docs/api-reference/completions",
+            "name": "Generative Search - OpenAI"
+          },
+          "text2vec-openai": {
+            "documentationHref": "https://platform.openai.com/docs/guides/embeddings/what-are-embeddings",
+            "name": "OpenAI Module"
+          }
+        },
+        "version": "1.21.2"
+      }
+    },
+    "object_counts": {
+      "Property": 0,
+      "BuyerProfile": 0,
+      "PropertyMatch": 0
+    }
+  },
+  "data_ingestion": {
+    "properties_inserted": 0,
+    "buyers_inserted": 0,
+    "errors": []
+  },
+  "vector_search": {},
+  "semantic_matching": {},
+  "performance_testing": {
+    "search_times": [
+      0.09416031837463379,
+      0.03171515464782715,
+      0.027971506118774414,
+      0.04060792922973633,
+      0.03627634048461914,
+      0.04292559623718262,
+      0.057889699935913086,
+      0.027478694915771484,
+      0.032619476318359375,
+      0.03575778007507324
+    ],
+    "result_counts": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "average_time": 0.042740249633789064,
+    "queries_performed": 10,
+    "max_time": 0.09416031837463379,
+    "min_time": 0.027478694915771484,
+    "performance_grade": "A",
+    "meets_target": true
+  },
+  "accuracy_testing": {
+    "test_cases": 4,
+    "accurate_matches": 0,
+    "accuracy_percentage": 0.0,
+    "test_details": [
+      {
+        "buyer_description": "First home buyer seeking modern unit",
+        "results_count": 0,
+        "top_matches": [],
+        "accuracy_assessment": "no_results"
+      },
+      {
+        "buyer_description": "Investor seeking rental yield",
+        "results_count": 0,
+        "top_matches": [],
+        "accuracy_assessment": "no_results"
+      },
+      {
+        "buyer_description": "Luxury family seeker",
+        "results_count": 0,
+        "top_matches": [],
+        "accuracy_assessment": "no_results"
+      },
+      {
+        "buyer_description": "Beachside lifestyle seeker",
+        "results_count": 0,
+        "top_matches": [],
+        "accuracy_assessment": "no_results"
+      }
+    ]
+  },
+  "metadata": {
+    "test_run_id": "8ebbbffc-7012-4c0a-a2fe-72181deb4a07",
+    "timestamp": "2025-07-29T21:04:57.716100+00:00",
+    "validation_passed": false,
+    "target_accuracy": 80,
+    "target_response_time": 2.0
+  }
+}

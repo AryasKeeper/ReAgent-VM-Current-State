@@ -1,0 +1,323 @@
+# ReAgent Sydney - PostgreSQL Custom Metrics Queries
+# Business-specific metrics for real estate intelligence system
+
+# =================================================================
+# REAGENT BUSINESS METRICS
+# =================================================================
+
+# Property listing metrics
+reagent_properties:
+  query: |
+    SELECT 
+      COUNT(*) as total_properties,
+      COUNT(CASE WHEN status = 'active' THEN 1 END) as active_listings,
+      COUNT(CASE WHEN status = 'sold' THEN 1 END) as sold_properties,
+      COUNT(CASE WHEN status = 'withdrawn' THEN 1 END) as withdrawn_properties,
+      COUNT(CASE WHEN listing_date > NOW() - INTERVAL '24 hours' THEN 1 END) as new_listings_24h,
+      COUNT(CASE WHEN updated_at > NOW() - INTERVAL '1 hour' THEN 1 END) as updated_listings_1h,
+      AVG(price_guide) as avg_price_guide,
+      COUNT(DISTINCT suburb) as unique_suburbs,
+      COUNT(DISTINCT postcode) as unique_postcodes
+    FROM properties;
+  metrics:
+    - total_properties:
+        usage: "GAUGE"
+        description: "Total number of properties in database"
+    - active_listings:
+        usage: "GAUGE" 
+        description: "Number of active property listings"
+    - sold_properties:
+        usage: "GAUGE"
+        description: "Number of sold properties"
+    - withdrawn_properties:
+        usage: "GAUGE"
+        description: "Number of withdrawn properties"
+    - new_listings_24h:
+        usage: "GAUGE"
+        description: "New listings in last 24 hours"
+    - updated_listings_1h:
+        usage: "GAUGE"
+        description: "Listings updated in last hour"
+    - avg_price_guide:
+        usage: "GAUGE"
+        description: "Average price guide across all active listings"
+    - unique_suburbs:
+        usage: "GAUGE"
+        description: "Number of unique suburbs with listings"
+    - unique_postcodes:
+        usage: "GAUGE"
+        description: "Number of unique postcodes with listings"
+
+# Buyer metrics
+reagent_buyers:
+  query: |
+    SELECT 
+      COUNT(*) as total_buyers,
+      COUNT(CASE WHEN status = 'active' THEN 1 END) as active_buyers,
+      COUNT(CASE WHEN pre_approval_status = 'approved' THEN 1 END) as pre_approved_buyers,
+      COUNT(CASE WHEN urgency_level = 'urgent' THEN 1 END) as urgent_buyers,
+      COUNT(CASE WHEN created_at > NOW() - INTERVAL '24 hours' THEN 1 END) as new_buyers_24h,
+      AVG(pre_approval_amount) as avg_pre_approval_amount
+    FROM buyers;
+  metrics:
+    - total_buyers:
+        usage: "GAUGE"
+        description: "Total number of buyers in system"
+    - active_buyers:
+        usage: "GAUGE"
+        description: "Number of active buyers"
+    - pre_approved_buyers:
+        usage: "GAUGE"
+        description: "Number of pre-approved buyers"
+    - urgent_buyers:
+        usage: "GAUGE"
+        description: "Number of buyers with urgent timeline"
+    - new_buyers_24h:
+        usage: "GAUGE"
+        description: "New buyers registered in last 24 hours"
+    - avg_pre_approval_amount:
+        usage: "GAUGE"
+        description: "Average pre-approval amount"
+
+# Property matching metrics
+reagent_matching:
+  query: |
+    SELECT 
+      COUNT(*) as total_matches,
+      COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_matches,
+      COUNT(CASE WHEN status = 'contacted' THEN 1 END) as contacted_matches,
+      COUNT(CASE WHEN status = 'viewed' THEN 1 END) as viewed_matches,
+      COUNT(CASE WHEN is_urgent = true THEN 1 END) as urgent_matches,
+      COUNT(CASE WHEN created_at > NOW() - INTERVAL '1 hour' THEN 1 END) as matches_1h,
+      AVG(match_score) as avg_match_score,
+      COUNT(CASE WHEN match_score >= 0.8 THEN 1 END) as high_quality_matches
+    FROM property_matches;
+  metrics:
+    - total_matches:
+        usage: "GAUGE"
+        description: "Total number of property matches"
+    - pending_matches:
+        usage: "GAUGE"
+        description: "Pending property matches awaiting contact"
+    - contacted_matches:
+        usage: "GAUGE"
+        description: "Matches where buyer has been contacted"
+    - viewed_matches:
+        usage: "GAUGE"
+        description: "Matches where property has been viewed"
+    - urgent_matches:
+        usage: "GAUGE"
+        description: "Urgent property matches"
+    - matches_1h:
+        usage: "GAUGE"
+        description: "New matches created in last hour"
+    - avg_match_score:
+        usage: "GAUGE"
+        description: "Average match score across all matches"
+    - high_quality_matches:
+        usage: "GAUGE"
+        description: "Number of matches with score >= 0.8"
+
+# Agent execution metrics
+reagent_agent_performance:
+  query: |
+    SELECT 
+      agent_name,
+      COUNT(*) as total_executions,
+      COUNT(CASE WHEN status = 'Completed' THEN 1 END) as successful_executions,
+      COUNT(CASE WHEN status = 'Failed' THEN 1 END) as failed_executions,
+      AVG(duration_seconds) as avg_duration_seconds,
+      MAX(duration_seconds) as max_duration_seconds,
+      SUM(items_processed) as total_items_processed,
+      SUM(api_calls_made) as total_api_calls
+    FROM agent_executions 
+    WHERE started_at > NOW() - INTERVAL '1 hour'
+    GROUP BY agent_name;
+  metrics:
+    - agent_name:
+        usage: "LABEL"
+        description: "Name of the ReAgent agent"
+    - total_executions:
+        usage: "GAUGE"
+        description: "Total agent executions in last hour"
+    - successful_executions:
+        usage: "GAUGE"
+        description: "Successful agent executions in last hour"
+    - failed_executions:
+        usage: "GAUGE"
+        description: "Failed agent executions in last hour"
+    - avg_duration_seconds:
+        usage: "GAUGE"
+        description: "Average execution duration in seconds"
+    - max_duration_seconds:
+        usage: "GAUGE"
+        description: "Maximum execution duration in seconds"
+    - total_items_processed:
+        usage: "GAUGE"
+        description: "Total items processed by agent in last hour"
+    - total_api_calls:
+        usage: "GAUGE"
+        description: "Total API calls made by agent in last hour"
+
+# Data freshness metrics
+reagent_data_freshness:
+  query: |
+    SELECT 
+      'listing_watcher' as agent_name,
+      EXTRACT(EPOCH FROM (NOW() - MAX(last_scraped_at))) as seconds_since_last_scrape,
+      COUNT(CASE WHEN last_scraped_at > NOW() - INTERVAL '2 hours' THEN 1 END) as fresh_properties,
+      COUNT(CASE WHEN last_scraped_at < NOW() - INTERVAL '6 hours' THEN 1 END) as stale_properties
+    FROM properties 
+    WHERE last_scraped_at IS NOT NULL
+    UNION ALL
+    SELECT 
+      'market_trends' as agent_name,
+      EXTRACT(EPOCH FROM (NOW() - MAX(period_start))) as seconds_since_last_update,
+      COUNT(CASE WHEN period_start > NOW() - INTERVAL '1 day' THEN 1 END) as fresh_trends,
+      COUNT(CASE WHEN period_start < NOW() - INTERVAL '3 days' THEN 1 END) as stale_trends
+    FROM market_trends;
+  metrics:
+    - agent_name:
+        usage: "LABEL"
+        description: "Data source agent name"
+    - seconds_since_last_scrape:
+        usage: "GAUGE"
+        description: "Seconds since last successful data update"
+    - fresh_properties:
+        usage: "GAUGE"
+        description: "Number of recently updated items"
+    - stale_properties:
+        usage: "GAUGE"
+        description: "Number of stale data items"
+    - seconds_since_last_update:
+        usage: "GAUGE"
+        description: "Seconds since last data update"
+    - fresh_trends:
+        usage: "GAUGE"
+        description: "Number of fresh trend data points"
+    - stale_trends:
+        usage: "GAUGE"
+        description: "Number of stale trend data points"
+
+# =================================================================
+# SYSTEM PERFORMANCE METRICS
+# =================================================================
+
+# Table sizes and growth
+reagent_table_stats:
+  query: |
+    SELECT 
+      schemaname,
+      tablename,
+      pg_total_relation_size(schemaname||'.'||tablename) as table_size_bytes,
+      n_tup_ins as inserts,
+      n_tup_upd as updates,
+      n_tup_del as deletes,
+      n_live_tup as live_tuples,
+      n_dead_tup as dead_tuples,
+      last_vacuum,
+      last_autovacuum,
+      last_analyze,
+      last_autoanalyze
+    FROM pg_stat_user_tables 
+    WHERE schemaname = 'public'
+    AND tablename IN ('properties', 'buyers', 'property_matches', 'agent_executions');
+  metrics:
+    - schemaname:
+        usage: "LABEL"
+        description: "Schema name"
+    - tablename:
+        usage: "LABEL"
+        description: "Table name"
+    - table_size_bytes:
+        usage: "GAUGE"
+        description: "Total table size in bytes"
+    - inserts:
+        usage: "COUNTER"
+        description: "Number of rows inserted"
+    - updates:
+        usage: "COUNTER"
+        description: "Number of rows updated"
+    - deletes:
+        usage: "COUNTER"
+        description: "Number of rows deleted"
+    - live_tuples:
+        usage: "GAUGE"
+        description: "Number of live tuples"
+    - dead_tuples:
+        usage: "GAUGE"
+        description: "Number of dead tuples"
+
+# Query performance
+reagent_slow_queries:
+  query: |
+    SELECT 
+      query,
+      calls,
+      total_time,
+      mean_time,
+      rows,
+      100.0 * shared_blks_hit / nullif(shared_blks_hit + shared_blks_read, 0) AS hit_percent
+    FROM pg_stat_statements 
+    WHERE query NOT LIKE '%pg_stat_statements%'
+    AND calls > 10
+    ORDER BY mean_time DESC 
+    LIMIT 10;
+  metrics:
+    - query:
+        usage: "LABEL"
+        description: "SQL query text (truncated)"
+    - calls:
+        usage: "COUNTER"
+        description: "Number of times query was called"
+    - total_time:
+        usage: "COUNTER"
+        description: "Total time spent executing query"
+    - mean_time:
+        usage: "GAUGE"
+        description: "Mean execution time per call"
+    - rows:
+        usage: "COUNTER"
+        description: "Total rows returned by query"
+    - hit_percent:
+        usage: "GAUGE"
+        description: "Buffer cache hit percentage"
+
+# Replication lag (if replica is configured)
+reagent_replication_lag:
+  query: |
+    SELECT 
+      client_addr,
+      application_name,
+      state,
+      sent_lsn,
+      write_lsn,
+      flush_lsn,
+      replay_lsn,
+      write_lag,
+      flush_lag,
+      replay_lag,
+      sync_state
+    FROM pg_stat_replication;
+  metrics:
+    - client_addr:
+        usage: "LABEL"
+        description: "Replica client IP address"
+    - application_name:
+        usage: "LABEL"
+        description: "Replica application name"
+    - state:
+        usage: "LABEL"
+        description: "Replication state"
+    - write_lag:
+        usage: "GAUGE"
+        description: "Write lag in seconds"
+    - flush_lag:
+        usage: "GAUGE"
+        description: "Flush lag in seconds"
+    - replay_lag:
+        usage: "GAUGE"
+        description: "Replay lag in seconds"
+    - sync_state:
+        usage: "LABEL"
+        description: "Synchronization state"

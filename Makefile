@@ -190,6 +190,26 @@ health:
 	@redis-cli ping && echo "✅ Redis healthy" || echo "❌ Redis unhealthy"
 	@docker-compose exec -T postgres pg_isready -U reagent -d reagent && echo "✅ PostgreSQL healthy" || echo "❌ PostgreSQL unhealthy"
 
+# Emergency fixes
+fix-weaviate:
+	@echo "🚨 EMERGENCY: Fixing Weaviate OpenAI API key configuration..."
+	@./scripts/fix_weaviate_config.sh
+
+validate-env:
+	@echo "🔍 Validating environment configuration..."
+	@./scripts/validate_env.sh
+
+weaviate-logs:
+	@echo "📋 Checking Weaviate logs for errors..."
+	@docker compose logs weaviate | tail -20
+
+weaviate-restart:
+	@echo "🔄 Restarting Weaviate service..."
+	@docker compose restart weaviate
+	@echo "⏳ Waiting for Weaviate to start..."
+	@sleep 15
+	@docker compose ps weaviate
+
 # Environment setup
 env-example:
 	@echo "Creating .env.example from current .env..."

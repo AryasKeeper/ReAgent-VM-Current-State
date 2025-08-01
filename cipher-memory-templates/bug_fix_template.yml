@@ -1,0 +1,47 @@
+type: "bug_fix"
+timestamp: "2025-01-30T03:30:00Z"
+agent: "Cascade|Claude|Gemini"
+project: "ReAgent Sydney"
+version: "1.0"
+
+bug_identification:
+  title: "Brief description of the bug"
+  severity: "critical|high|medium|low"
+  category: "import_error|session_leak|api_timeout|ui_issue|performance|security"
+  affected_components: ["list", "of", "components"]
+  
+symptoms:
+  description: "How the bug manifests"
+  error_messages: "Exact error messages if any"
+  reproduction_steps: "Steps to reproduce the issue"
+  frequency: "always|intermittent|rare"
+  
+root_cause:
+  analysis: "What caused the issue"
+  contributing_factors: "Other factors that led to the problem"
+  code_location: "File and line where issue originates"
+  
+solution:
+  approach: "High-level solution strategy"
+  implementation: "Detailed implementation steps"
+  files_modified: 
+    - "path/to/modified/file.py"
+    - "path/to/config/file.yml"
+  code_changes: "Key code changes made"
+  
+validation:
+  testing_performed: "How the fix was tested"
+  test_results: "Results of testing"
+  regression_testing: "Any regression tests performed"
+  verification_criteria: "How to verify the fix works"
+  
+prevention:
+  future_prevention: "How to prevent similar issues"
+  monitoring_added: "Any monitoring or alerting added"
+  code_improvements: "Broader code improvements made"
+  
+metadata:
+  related_memories: ["memory_id_1", "memory_id_2"]
+  related_bugs: ["bug_id_1", "bug_id_2"]
+  time_to_resolution: "Duration from discovery to fix"
+  team_members: ["developer_1", "developer_2"]

@@ -1,0 +1,206 @@
+{
+  "test_summary": {
+    "timestamp": 1753821362.6082506,
+    "total_tests": 16,
+    "passed_tests": 5,
+    "failed_tests": 11,
+    "success_rate": 0.3125,
+    "total_duration_seconds": 10.118271827697754,
+    "average_test_duration": 0.6323919892311096
+  },
+  "test_results": [
+    {
+      "test_name": "prometheus_health",
+      "success": false,
+      "duration_seconds": 0.012537956237792969,
+      "details": {},
+      "error_message": "HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /-/healthy (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7449b1da0ce0>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+    },
+    {
+      "test_name": "prometheus_targets",
+      "success": false,
+      "duration_seconds": 0.0032553672790527344,
+      "details": {},
+      "error_message": "HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/targets (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7449b1da1550>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+    },
+    {
+      "test_name": "prometheus_metrics_collection",
+      "success": false,
+      "duration_seconds": 0.02000594139099121,
+      "details": {
+        "total_queries": 7,
+        "successful_queries": 0,
+        "success_rate": 0.0,
+        "query_results": {
+          "up": {
+            "success": false,
+            "error": "HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=up (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7449b1d44650>: Failed to establish a new connection: [Errno 111] Connection refused'))",
+            "description": "System uptime metrics"
+          },
+          "agent_executions_total": {
+            "success": false,
+            "error": "HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=agent_executions_total (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7449b1da0f50>: Failed to establish a new connection: [Errno 111] Connection refused'))",
+            "description": "Agent execution metrics"
+          },
+          "properties_processed_total": {
+            "success": false,
+            "error": "HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=properties_processed_total (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7449b1da1df0>: Failed to establish a new connection: [Errno 111] Connection refused'))",
+            "description": "Property processing metrics"
+          },
+          "buyer_matches_created_total": {
+            "success": false,
+            "error": "HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=buyer_matches_created_total (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7449b1da2570>: Failed to establish a new connection: [Errno 111] Connection refused'))",
+            "description": "Buyer matching metrics"
+          },
+          "external_api_requests_total": {
+            "success": false,
+            "error": "HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=external_api_requests_total (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7449b1da2d80>: Failed to establish a new connection: [Errno 111] Connection refused'))",
+            "description": "External API metrics"
+          },
+          "pg_up": {
+            "success": false,
+            "error": "HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=pg_up (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7449b1da35f0>: Failed to establish a new connection: [Errno 111] Connection refused'))",
+            "description": "Database connectivity metrics"
+          },
+          "redis_up": {
+            "success": false,
+            "error": "HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/query?query=redis_up (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7449b1da2900>: Failed to establish a new connection: [Errno 111] Connection refused'))",
+            "description": "Redis connectivity metrics"
+          }
+        }
+      },
+      "error_message": null
+    },
+    {
+      "test_name": "grafana_health",
+      "success": false,
+      "duration_seconds": 0.0013129711151123047,
+      "details": {},
+      "error_message": "HTTPConnectionPool(host='localhost', port=3001): Max retries exceeded with url: /api/health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7449b1da0f80>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+    },
+    {
+      "test_name": "alertmanager_health",
+      "success": false,
+      "duration_seconds": 0.001027822494506836,
+      "details": {},
+      "error_message": "HTTPConnectionPool(host='localhost', port=9093): Max retries exceeded with url: /-/healthy (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7449b1da1130>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+    },
+    {
+      "test_name": "system_health_checks",
+      "success": false,
+      "duration_seconds": 7.4410154819488525,
+      "details": {
+        "database_healthy": false,
+        "redis_healthy": false,
+        "weaviate_healthy": false,
+        "system_healthy": false,
+        "database_response_time": 2120.03,
+        "redis_response_time": 145.96,
+        "weaviate_response_time": 1187.4
+      },
+      "error_message": null
+    },
+    {
+      "test_name": "agent_monitoring",
+      "success": true,
+      "duration_seconds": 1.0314815044403076,
+      "details": {
+        "agent_name": "test_agent",
+        "total_executions": 1,
+        "recent_success_rate": 1.0,
+        "execution_recorded": true
+      },
+      "error_message": null
+    },
+    {
+      "test_name": "business_metrics_collection",
+      "success": true,
+      "duration_seconds": 0.00164794921875,
+      "details": {
+        "market_update_recorded": true,
+        "behavior_snapshot_recorded": true,
+        "agent_performance_recorded": true,
+        "anomaly_recorded": true
+      },
+      "error_message": null
+    },
+    {
+      "test_name": "alert_generation",
+      "success": false,
+      "duration_seconds": 0.004122018814086914,
+      "details": {},
+      "error_message": "HTTPConnectionPool(host='localhost', port=9093): Max retries exceeded with url: /api/v1/alerts (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7449900b86b0>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+    },
+    {
+      "test_name": "dashboard_queries",
+      "success": false,
+      "duration_seconds": 0.009224653244018555,
+      "details": {
+        "total_queries": 7,
+        "successful_queries": 0,
+        "success_rate": 0.0,
+        "average_query_time": 0.0
+      },
+      "error_message": null
+    },
+    {
+      "test_name": "external_api_monitoring",
+      "success": true,
+      "duration_seconds": 0.46413207054138184,
+      "details": {
+        "note": "Placeholder test - to be implemented"
+      },
+      "error_message": null
+    },
+    {
+      "test_name": "database_monitoring",
+      "success": false,
+      "duration_seconds": 0.20439767837524414,
+      "details": {
+        "note": "Placeholder test - to be implemented"
+      },
+      "error_message": null
+    },
+    {
+      "test_name": "redis_monitoring",
+      "success": true,
+      "duration_seconds": 0.22550010681152344,
+      "details": {
+        "note": "Placeholder test - to be implemented"
+      },
+      "error_message": null
+    },
+    {
+      "test_name": "weaviate_monitoring",
+      "success": false,
+      "duration_seconds": 0.26251983642578125,
+      "details": {
+        "note": "Placeholder test - to be implemented"
+      },
+      "error_message": null
+    },
+    {
+      "test_name": "log_collection",
+      "success": true,
+      "duration_seconds": 0.21329092979431152,
+      "details": {
+        "note": "Placeholder test - to be implemented"
+      },
+      "error_message": null
+    },
+    {
+      "test_name": "performance_monitoring",
+      "success": false,
+      "duration_seconds": 0.22279953956604004,
+      "details": {
+        "note": "Placeholder test - to be implemented"
+      },
+      "error_message": null
+    }
+  ],
+  "recommendations": [
+    "\u26a0\ufe0f  11 tests failed - review error messages and fix issues",
+    "\ud83d\udc0c 1 tests took longer than 5 seconds - check performance",
+    "\ud83d\udd34 Success rate below 80% - monitoring system needs attention"
+  ]
+}

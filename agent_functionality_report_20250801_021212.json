@@ -1,0 +1,58 @@
+{
+  "timestamp": "2025-08-01T09:11:28.267556+00:00",
+  "test_status": "failure",
+  "agents": {
+    "listing_watcher": {
+      "import_status": "error",
+      "module_path": "src.reagent.agents.listing_watcher.agent",
+      "error": "Unexpected error: error parsing value for field \"allowed_hosts\" from source \"EnvSettingsSource\""
+    },
+    "suburb_signal": {
+      "import_status": "error",
+      "module_path": "src.reagent.agents.suburb_signal.agent",
+      "error": "Unexpected error: error parsing value for field \"allowed_hosts\" from source \"EnvSettingsSource\""
+    },
+    "buyer_matchmaker": {
+      "import_status": "error",
+      "module_path": "src.reagent.agents.buyer_matchmaker.agent",
+      "error": "Unexpected error: error parsing value for field \"allowed_hosts\" from source \"EnvSettingsSource\""
+    },
+    "seller_strategy": {
+      "import_status": "error",
+      "module_path": "src.reagent.agents.seller_strategy.agent",
+      "error": "Unexpected error: error parsing value for field \"allowed_hosts\" from source \"EnvSettingsSource\""
+    },
+    "off_market_radar": {
+      "import_status": "error",
+      "module_path": "src.reagent.agents.off_market_radar.agent",
+      "error": "Unexpected error: error parsing value for field \"allowed_hosts\" from source \"EnvSettingsSource\""
+    },
+    "agent_whisperer": {
+      "import_status": "error",
+      "module_path": "src.reagent.agents.agent_whisperer.agent",
+      "error": "Unexpected error: error parsing value for field \"allowed_hosts\" from source \"EnvSettingsSource\""
+    }
+  },
+  "imports": {},
+  "modules": {
+    "orchestration": {
+      "import_status": "error",
+      "module_path": "src.reagent.orchestration.graph",
+      "error": "No module named 'src.reagent.orchestration.core'"
+    }
+  },
+  "issues": [],
+  "summary": {
+    "successful_agents": 0,
+    "total_agents": 6,
+    "successful_modules": 0,
+    "total_modules": 1,
+    "total_errors": 0,
+    "total_warnings": 0,
+    "overall_status": "FAILURE"
+  },
+  "orchestration": {
+    "status": "error",
+    "error": "No module named 'src.reagent.orchestration.core'"
+  }
+}

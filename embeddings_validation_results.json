@@ -1,0 +1,38 @@
+{
+  "connectivity": {
+    "status": "PASS",
+    "duration": 0.6695303916931152,
+    "tokens_used": 13
+  },
+  "embeddings_api": {
+    "status": "PASS",
+    "duration": 0.5278177261352539,
+    "model": "text-embedding-3-small",
+    "dimension": 1536,
+    "consistent_dimensions": true,
+    "tokens_used": 28
+  },
+  "similarity": {
+    "status": "PASS",
+    "duration": 0.5024654865264893,
+    "similar_similarity": 0.8748774056852955,
+    "different_similarity": 0.38929844438182293,
+    "similarity_works": "True"
+  },
+  "reagent_vectorizers": {
+    "status": "PASS",
+    "duration": 0.004866123199462891,
+    "property_dimension": 31,
+    "buyer_dimension": 30,
+    "property_normalized": true,
+    "buyer_normalized": true,
+    "dimensions_match": false
+  },
+  "performance": {
+    "status": "PASS",
+    "avg_time": 0.2239936351776123,
+    "min_time": 0.1879589557647705,
+    "max_time": 0.24267220497131348,
+    "performance_acceptable": true
+  }
+}

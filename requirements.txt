@@ -1,13 +1,19 @@
 # Core Framework
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-pydantic==2.5.0
-pydantic-settings==2.1.0
+pydantic
+pydantic-settings~=2.7.4
 
-# CrewAI and LLM
+# LangGraph Orchestration and LLM
+langgraph~=0.2.0
+langgraph-checkpoint-postgres==2.0.3
+langchain==0.3.4
+langchain-core~=0.3.12
+langchain-openai==0.2.2
+openai==1.54.0
+
+# CrewAI (Legacy - being phased out)
 crewai==0.22.5
-langchain==0.1.0
-openai==1.6.1
 
 # Database
 sqlalchemy==2.0.23
@@ -23,7 +29,7 @@ redis==5.0.1
 hiredis==2.2.3
 
 # HTTP Requests
-httpx==0.25.2
+httpx==0.23.3
 aiohttp==3.9.1
 
 # Task Queue
@@ -34,6 +40,7 @@ kombu==5.3.4
 prometheus-client==0.19.0
 structlog==23.2.0
 sentry-sdk==1.38.0
+pybreaker==1.1.0
 
 # Data Processing
 pandas==2.1.4
@@ -45,7 +52,7 @@ lxml==4.9.3
 pytest==7.4.3
 pytest-asyncio==0.21.1
 pytest-cov==4.1.0
-httpx-mock==0.7.1
+pytest-httpx==0.21.3
 factory-boy==3.3.0
 
 # Development

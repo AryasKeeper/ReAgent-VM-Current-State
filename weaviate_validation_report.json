@@ -1,0 +1,77 @@
+{
+  "timestamp": 1753769263.0485232,
+  "summary": {
+    "total_tests": 6,
+    "passed_tests": 6,
+    "success_rate": 100.0
+  },
+  "test_results": {
+    "connection": {
+      "status": "pass",
+      "details": {
+        "status": "connected",
+        "ready": true,
+        "live": true,
+        "url": "http://localhost:8080",
+        "meta": {
+          "hostname": "http://[::]:8080",
+          "modules": {
+            "generative-openai": {
+              "documentationHref": "https://platform.openai.com/docs/api-reference/completions",
+              "name": "Generative Search - OpenAI"
+            },
+            "text2vec-openai": {
+              "documentationHref": "https://platform.openai.com/docs/guides/embeddings/what-are-embeddings",
+              "name": "OpenAI Module"
+            }
+          },
+          "version": "1.21.2"
+        }
+      }
+    },
+    "embeddings": {
+      "status": "pass",
+      "property_dims": 31,
+      "buyer_dims": 30,
+      "similarity": 0.0,
+      "generation_times": {
+        "property": 0.0009093284606933594,
+        "buyer": 0.0002930164337158203
+      }
+    },
+    "ingestion": {
+      "status": "pass",
+      "properties_inserted": 3,
+      "buyers_inserted": 2
+    },
+    "search": {
+      "status": "pass",
+      "query_results": {
+        "modern apartment CBD": {
+          "result_count": 0
+        },
+        "beach house ocean views": {
+          "result_count": 0
+        },
+        "family home garden": {
+          "result_count": 0
+        }
+      },
+      "hybrid_results": 0
+    },
+    "matching": {
+      "status": "pass",
+      "total_matches": 0,
+      "first_home_buyer_matches": 0,
+      "family_buyer_matches": 0
+    },
+    "performance": {
+      "status": "pass",
+      "batch_insert_duration": 0.04019522666931152,
+      "search_duration": 0.01386713981628418,
+      "count_duration": 0.015538692474365234,
+      "total_objects": 8
+    }
+  },
+  "recommendations": []
+}

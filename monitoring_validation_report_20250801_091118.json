@@ -1,0 +1,140 @@
+{
+  "validation_timestamp": "2025-08-01T09:11:17.723494",
+  "environment": "development",
+  "services": {
+    "postgres": {
+      "status": "unhealthy",
+      "error": "connection to server at \"localhost\" (127.0.0.1), port 5432 failed: FATAL:  password authentication failed for user \"reagent\"\n",
+      "timestamp": "2025-08-01T09:11:17.851261"
+    },
+    "redis": {
+      "status": "healthy",
+      "version": "7.4.5",
+      "memory_used_mb": 1.06,
+      "uptime_seconds": 6410,
+      "timestamp": "2025-08-01T09:11:17.952172"
+    },
+    "weaviate": {
+      "status": "healthy",
+      "ready": true,
+      "version": "1.21.8",
+      "response_time_ms": 28.38,
+      "timestamp": "2025-08-01T09:11:18.041539"
+    },
+    "chromadb": {
+      "status": "unhealthy",
+      "http_status": 410,
+      "timestamp": "2025-08-01T09:11:18.073282"
+    }
+  },
+  "monitoring_stack": {
+    "prometheus": {
+      "url": "http://localhost:9090/-/healthy",
+      "accessible": false,
+      "error": "Connection refused - service not running",
+      "timestamp": "2025-08-01T09:11:18.082991"
+    },
+    "grafana": {
+      "url": "http://localhost:3001/api/health",
+      "accessible": false,
+      "error": "Connection refused - service not running",
+      "timestamp": "2025-08-01T09:11:18.085013"
+    },
+    "alertmanager": {
+      "url": "http://localhost:9093/-/healthy",
+      "accessible": false,
+      "error": "Connection refused - service not running",
+      "timestamp": "2025-08-01T09:11:18.086913"
+    }
+  },
+  "configuration": {
+    "prometheus_config": {
+      "path": "monitoring/prometheus/prometheus.yml",
+      "exists": true,
+      "timestamp": "2025-08-01T09:11:18.073975",
+      "size_bytes": 3381,
+      "modified": "2025-08-01T01:47:11.046841"
+    },
+    "alert_rules": {
+      "path": "monitoring/prometheus/alert_rules/reagent_alerts.yml",
+      "exists": true,
+      "timestamp": "2025-08-01T09:11:18.074122",
+      "size_bytes": 10129,
+      "modified": "2025-07-28T07:54:54.594680"
+    },
+    "alertmanager_config": {
+      "path": "monitoring/alertmanager/alertmanager.yml",
+      "exists": true,
+      "timestamp": "2025-08-01T09:11:18.074370",
+      "size_bytes": 6938,
+      "modified": "2025-07-28T07:55:42.838886"
+    },
+    "grafana_provisioning": {
+      "path": "monitoring/grafana/provisioning/datasources/prometheus.yml",
+      "exists": true,
+      "timestamp": "2025-08-01T09:11:18.074590",
+      "size_bytes": 1281,
+      "modified": "2025-07-28T07:56:07.627923"
+    },
+    "monitoring_compose": {
+      "path": "docker-compose.monitoring.yml",
+      "exists": true,
+      "timestamp": "2025-08-01T09:11:18.074709",
+      "size_bytes": 11063,
+      "modified": "2025-07-28T07:58:46.535228"
+    }
+  },
+  "recommendations": [
+    {
+      "category": "infrastructure",
+      "priority": "high",
+      "issue": "postgres service is not healthy",
+      "action": "Check postgres service status and restart if needed"
+    },
+    {
+      "category": "infrastructure",
+      "priority": "medium",
+      "issue": "chromadb service is not healthy",
+      "action": "Check chromadb service status and restart if needed"
+    },
+    {
+      "category": "monitoring",
+      "priority": "high",
+      "issue": "prometheus monitoring service not accessible",
+      "action": "Start prometheus using docker-compose -f docker-compose.monitoring.yml up prometheus -d"
+    },
+    {
+      "category": "monitoring",
+      "priority": "high",
+      "issue": "grafana monitoring service not accessible",
+      "action": "Start grafana using docker-compose -f docker-compose.monitoring.yml up grafana -d"
+    },
+    {
+      "category": "monitoring",
+      "priority": "high",
+      "issue": "alertmanager monitoring service not accessible",
+      "action": "Start alertmanager using docker-compose -f docker-compose.monitoring.yml up alertmanager -d"
+    },
+    {
+      "category": "deployment",
+      "priority": "critical",
+      "issue": "System not ready for production",
+      "action": "Address all high-priority issues before production deployment"
+    }
+  ],
+  "readiness": {
+    "score": 50.0,
+    "status": "not_ready",
+    "critical_services_healthy": false,
+    "configurations_present": true,
+    "monitoring_accessible": false
+  },
+  "test_summary": {
+    "total": 12,
+    "passed": 7,
+    "failed": 5,
+    "warnings": 0
+  },
+  "validation_score": 58.333333333333336,
+  "validation_status": "failed"
+}

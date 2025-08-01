@@ -1,0 +1,78 @@
+{
+  "deployment_timestamp": "2025-07-29T02:46:52.968396",
+  "weaviate_url": "http://localhost:8080",
+  "force_recreate": true,
+  "schemas_deployed": {
+    "Property": {
+      "class_name": "Property",
+      "status": "failed",
+      "deployment_time": null,
+      "pre_deployment_stats": {
+        "object_count": 1,
+        "exists": true
+      },
+      "post_deployment_stats": {},
+      "validation_passed": false,
+      "performance_metrics": {},
+      "errors": [
+        "Schema creation failed"
+      ]
+    },
+    "BuyerProfile": {
+      "class_name": "BuyerProfile",
+      "status": "failed",
+      "deployment_time": null,
+      "pre_deployment_stats": {
+        "object_count": 1,
+        "exists": true
+      },
+      "post_deployment_stats": {},
+      "validation_passed": false,
+      "performance_metrics": {},
+      "errors": [
+        "Schema creation failed"
+      ]
+    },
+    "PropertyMatch": {
+      "class_name": "PropertyMatch",
+      "status": "validation_failed",
+      "deployment_time": 0.03563666343688965,
+      "pre_deployment_stats": {
+        "object_count": 0,
+        "exists": true
+      },
+      "post_deployment_stats": {
+        "object_count": 0,
+        "exists": true
+      },
+      "validation_passed": false,
+      "performance_metrics": {
+        "basic_operations_time": 0.007812738418579102,
+        "initial_object_count": 0
+      },
+      "errors": [
+        "Vectorizer mismatch: expected None, got text2vec-openai"
+      ]
+    }
+  },
+  "performance_metrics": {
+    "vector_search_available": true,
+    "openai_integration": true,
+    "transformers_available": false,
+    "schema_access_times": {
+      "full_schema_retrieval": 0.00298309326171875,
+      "PropertyMatch_count": 0.002568483352661133
+    },
+    "errors": []
+  },
+  "validation_results": {},
+  "errors": [],
+  "summary": {
+    "total_schemas": 3,
+    "successful_deployments": 0,
+    "failed_deployments": 2,
+    "skipped_deployments": 0,
+    "total_errors": 0,
+    "deployment_success_rate": 0.0
+  }
+}

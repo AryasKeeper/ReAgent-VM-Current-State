@@ -1,0 +1,42 @@
+{
+  "timestamp": "2025-07-29T20:54:32.426282",
+  "test_run_id": "7b1208dd-d5c3-4ae2-83f3-b0e0921ca008",
+  "schemas": {
+    "schemas_checked": 3,
+    "schemas_exist": 0,
+    "schema_details": {
+      "Property": {
+        "exists": false,
+        "error": "'WeaviateClient' object has no attribute 'get_schema_class'"
+      },
+      "BuyerProfile": {
+        "exists": false,
+        "error": "'WeaviateClient' object has no attribute 'get_schema_class'"
+      },
+      "PropertyMatch": {
+        "exists": false,
+        "error": "'WeaviateClient' object has no attribute 'get_schema_class'"
+      }
+    }
+  },
+  "object_counts": {
+    "Property": 0,
+    "BuyerProfile": 0,
+    "PropertyMatch": 0
+  },
+  "data_ingestion": {
+    "test_objects_created": 0,
+    "ingestion_errors": [
+      "Property ingestion failed: Not valid 'uuid' or 'uuid' can not be extracted from value",
+      "Property ingestion failed: Not valid 'uuid' or 'uuid' can not be extracted from value"
+    ],
+    "average_ingestion_time": 0.0
+  },
+  "vector_search": {
+    "searches_performed": 0,
+    "search_times": [],
+    "results_returned": [],
+    "average_search_time": 0.0,
+    "search_details": []
+  }
+}

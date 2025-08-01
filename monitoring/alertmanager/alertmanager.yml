@@ -1,0 +1,205 @@
+# ReAgent Sydney - AlertManager Configuration
+# Production alerting and notification routing
+
+global:
+  # SMTP configuration for email alerts
+  smtp_smarthost: '${SMTP_HOST}:${SMTP_PORT}'
+  smtp_from: '${SMTP_USER}'
+  smtp_auth_username: '${SMTP_USER}'
+  smtp_auth_password: '${SMTP_PASSWORD}'
+  smtp_require_tls: true
+
+# Templates for alert formatting
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Routing tree for alert distribution
+route:
+  group_by: ['alertname', 'component']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'default-receiver'
+  
+  # Specific routing rules
+  routes:
+    # Critical system alerts - immediate notification
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 10s
+      repeat_interval: 30m
+      
+    # Database alerts - DBA team
+    - match:
+        component: database
+      receiver: 'database-team'
+      group_interval: 2m
+      
+    # Application alerts - dev team  
+    - match_re:
+        component: (api|agents|workers)
+      receiver: 'dev-team'
+      
+    # Infrastructure alerts - ops team
+    - match_re:
+        component: (system|cache|vector_db)
+      receiver: 'ops-team'
+      
+    # Business logic alerts - product team
+    - match_re:
+        component: (data_pipeline|matching_engine|external_apis)
+      receiver: 'product-team'
+
+# Alert receivers and notification channels
+receivers:
+  # Default receiver - general Slack channel
+  - name: 'default-receiver'
+    slack_configs:
+      - api_url: '${ALERTMANAGER_WEBHOOK_URL}'
+        channel: '#reagent-alerts'
+        title: 'ReAgent Sydney Alert'
+        text: |
+          {{ range .Alerts }}
+          **Alert:** {{ .Annotations.summary }}
+          **Description:** {{ .Annotations.description }}
+          **Severity:** {{ .Labels.severity }}
+          **Component:** {{ .Labels.component }}
+          **Time:** {{ .StartsAt.Format "2006-01-02 15:04:05 AEST" }}
+          {{ end }}
+        send_resolved: true
+        
+  # Critical alerts - immediate phone/SMS + Slack + Email
+  - name: 'critical-alerts'
+    slack_configs:
+      - api_url: '${ALERTMANAGER_WEBHOOK_URL}'
+        channel: '#reagent-critical'
+        title: '🚨 CRITICAL: ReAgent Sydney System Alert'
+        text: |
+          **CRITICAL SYSTEM ALERT**
+          {{ range .Alerts }}
+          **Alert:** {{ .Annotations.summary }}
+          **Description:** {{ .Annotations.description }}
+          **Component:** {{ .Labels.component }}
+          **Instance:** {{ .Labels.instance }}
+          **Started:** {{ .StartsAt.Format "2006-01-02 15:04:05 AEST" }}
+          {{ end }}
+          
+          **Action Required:** Immediate investigation needed
+        send_resolved: true
+        color: 'danger'
+        
+    email_configs:
+      - to: 'ops-team@your-domain.com'
+        subject: '🚨 CRITICAL: ReAgent Sydney Alert - {{ .GroupLabels.alertname }}'
+        body: |
+          Critical alert detected in ReAgent Sydney production environment.
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Component: {{ .Labels.component }}
+          Instance: {{ .Labels.instance }}
+          Started: {{ .StartsAt.Format "2006-01-02 15:04:05 AEST" }}
+          {{ if .Labels.runbook_url }}
+          Runbook: {{ .Labels.runbook_url }}
+          {{ end }}
+          
+          {{ end }}
+          
+          Please investigate immediately.
+        
+    # PagerDuty integration for critical alerts
+    pagerduty_configs:
+      - service_key: '${PAGERDUTY_SERVICE_KEY}'
+        description: 'ReAgent Sydney Critical Alert: {{ .GroupLabels.alertname }}'
+        details:
+          component: '{{ .GroupLabels.component }}'
+          summary: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+          
+  # Database team notifications
+  - name: 'database-team'
+    slack_configs:
+      - api_url: '${ALERTMANAGER_WEBHOOK_URL}'
+        channel: '#reagent-database'
+        title: '🗄️ Database Alert - ReAgent Sydney'
+        text: |
+          **Database Component Alert**
+          {{ range .Alerts }}
+          **Alert:** {{ .Annotations.summary }}
+          **Description:** {{ .Annotations.description }}
+          **Instance:** {{ .Labels.instance }}
+          **Time:** {{ .StartsAt.Format "2006-01-02 15:04:05 AEST" }}
+          {{ end }}
+        send_resolved: true
+        color: '{{ if eq .Status "firing" }}warning{{ else }}good{{ end }}'
+        
+    email_configs:
+      - to: 'dba-team@your-domain.com'
+        subject: 'ReAgent Database Alert - {{ .GroupLabels.alertname }}'
+        
+  # Development team notifications  
+  - name: 'dev-team'
+    slack_configs:
+      - api_url: '${ALERTMANAGER_WEBHOOK_URL}'
+        channel: '#reagent-dev'
+        title: '⚡ Application Alert - ReAgent Sydney'
+        text: |
+          **Application Component Alert**
+          {{ range .Alerts }}
+          **Alert:** {{ .Annotations.summary }}
+          **Description:** {{ .Annotations.description }}
+          **Component:** {{ .Labels.component }}
+          **Severity:** {{ .Labels.severity }}
+          **Time:** {{ .StartsAt.Format "2006-01-02 15:04:05 AEST" }}
+          {{ end }}
+        send_resolved: true
+        
+  # Operations team notifications
+  - name: 'ops-team'  
+    slack_configs:
+      - api_url: '${ALERTMANAGER_WEBHOOK_URL}'
+        channel: '#reagent-ops'
+        title: '🔧 Infrastructure Alert - ReAgent Sydney'
+        text: |
+          **Infrastructure Alert**
+          {{ range .Alerts }}
+          **Alert:** {{ .Annotations.summary }}
+          **Description:** {{ .Annotations.description }}
+          **Component:** {{ .Labels.component }}
+          **Instance:** {{ .Labels.instance }}
+          **Time:** {{ .StartsAt.Format "2006-01-02 15:04:05 AEST" }}
+          {{ end }}
+        send_resolved: true
+        
+  # Product team notifications
+  - name: 'product-team'
+    slack_configs:
+      - api_url: '${ALERTMANAGER_WEBHOOK_URL}'
+        channel: '#reagent-product'
+        title: '📊 Business Logic Alert - ReAgent Sydney'
+        text: |
+          **Business Component Alert**
+          {{ range .Alerts }}
+          **Alert:** {{ .Annotations.summary }}
+          **Description:** {{ .Annotations.description }}
+          **Component:** {{ .Labels.component }}
+          **Time:** {{ .StartsAt.Format "2006-01-02 15:04:05 AEST" }}
+          {{ end }}
+        send_resolved: true
+
+# Inhibition rules to prevent spam
+inhibit_rules:
+  # Inhibit warning alerts when critical alerts are firing
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['instance', 'component']
+    
+  # Inhibit individual service alerts when system is down
+  - source_match:
+      alertname: 'SystemDown'
+    target_match_re:
+      alertname: '(APIDown|PostgreSQLDown|RedisDown|WeaviateDown)'
+    equal: ['instance']

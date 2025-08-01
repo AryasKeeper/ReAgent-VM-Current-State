@@ -1,0 +1,288 @@
+# ReAgent Sydney - Prometheus Alert Rules
+# Critical alerts for production monitoring
+
+groups:
+  # =================================================================
+  # SYSTEM-LEVEL ALERTS
+  # =================================================================
+  - name: system.rules
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 80% for more than 5 minutes on {{ $labels.instance }}"
+
+      - alert: HighMemoryUsage  
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 85% on {{ $labels.instance }}"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 15
+        for: 5m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "Disk space critically low"
+          description: "Disk space is below 15% on {{ $labels.instance }} {{ $labels.mountpoint }}"
+
+      - alert: SystemDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "System is down"
+          description: "{{ $labels.job }} on {{ $labels.instance }} has been down for more than 1 minute"
+
+  # =================================================================
+  # DATABASE ALERTS
+  # =================================================================
+  - name: database.rules
+    rules:
+      - alert: PostgreSQLDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL instance {{ $labels.instance }} is down"
+
+      - alert: PostgreSQLTooManyConnections
+        expr: pg_stat_database_numbackends / pg_settings_max_connections * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "PostgreSQL connection usage high"
+          description: "PostgreSQL is using more than 80% of available connections on {{ $labels.instance }}"
+
+      - alert: PostgreSQLReplicationLag
+        expr: pg_stat_replication_lag_seconds > 300
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "PostgreSQL replication lag high"
+          description: "Replication lag is {{ $value }}s on {{ $labels.instance }}"
+
+      - alert: PostgreSQLSlowQueries
+        expr: pg_stat_activity_max_tx_duration > 300
+        for: 2m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "PostgreSQL slow queries detected"
+          description: "Long running queries detected on {{ $labels.instance }}"
+
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: cache
+        annotations:
+          summary: "Redis is down"
+          description: "Redis instance {{ $labels.instance }} is down"
+
+      - alert: RedisMemoryUsageHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis memory usage is above 90% on {{ $labels.instance }}"
+
+      - alert: WeaviateDown
+        expr: up{job="weaviate"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: vector_db
+        annotations:
+          summary: "Weaviate vector database is down"
+          description: "Weaviate is not responding on {{ $labels.instance }}"
+
+  # =================================================================
+  # APPLICATION ALERTS
+  # =================================================================
+  - name: application.rules
+    rules:
+      - alert: APIHighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="reagent-api"}[5m])) > 5
+        for: 2m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "API response time high"
+          description: "95th percentile response time is {{ $value }}s for ReAgent API"
+
+      - alert: APIHighErrorRate
+        expr: rate(http_requests_total{job="reagent-api",status=~"5.."}[5m]) / rate(http_requests_total{job="reagent-api"}[5m]) * 100 > 5
+        for: 2m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "API error rate high"
+          description: "API error rate is {{ $value }}% over the last 5 minutes"
+
+      - alert: APIDown
+        expr: up{job="reagent-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "ReAgent API is down"
+          description: "FastAPI service is not responding"
+
+      - alert: AgentExecutionFailures
+        expr: increase(agent_executions_failed_total[10m]) > 5
+        for: 2m
+        labels:
+          severity: warning
+          component: agents
+        annotations:
+          summary: "High agent execution failure rate"
+          description: "{{ $value }} agent executions have failed in the last 10 minutes"
+
+      - alert: AgentExecutionTime
+        expr: histogram_quantile(0.95, rate(agent_execution_duration_seconds_bucket[5m])) > 600
+        for: 3m
+        labels:
+          severity: warning
+          component: agents
+        annotations:
+          summary: "Agent execution time high"
+          description: "95th percentile agent execution time is {{ $value }}s"
+
+      - alert: CeleryQueueBacklog
+        expr: celery_queue_length > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: workers
+        annotations:
+          summary: "Celery queue backlog high"
+          description: "Celery queue {{ $labels.queue }} has {{ $value }} pending tasks"
+
+      - alert: CeleryWorkerDown
+        expr: celery_workers_active == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: workers
+        annotations:
+          summary: "No active Celery workers"
+          description: "All Celery workers are down or not responding"
+
+  # =================================================================
+  # BUSINESS LOGIC ALERTS  
+  # =================================================================
+  - name: business.rules
+    rules:
+      - alert: PropertyDataStale
+        expr: time() - last_successful_scrape_timestamp > 7200  # 2 hours
+        for: 5m
+        labels:
+          severity: warning
+          component: data_pipeline
+        annotations:
+          summary: "Property data is stale"
+          description: "No successful property data scraping for more than 2 hours"
+
+      - alert: LowBuyerMatchingRate
+        expr: rate(buyer_matches_created_total[1h]) < 5
+        for: 10m
+        labels:
+          severity: warning
+          component: matching_engine
+        annotations:
+          summary: "Low buyer matching rate"
+          description: "Buyer matching rate is {{ $value }} matches per hour, below expected threshold"
+
+      - alert: APIRateLimitHit
+        expr: increase(api_rate_limit_exceeded_total[5m]) > 10
+        for: 1m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "API rate limits being exceeded"
+          description: "{{ $value }} rate limit violations in the last 5 minutes"
+
+      - alert: ExternalAPIFailures
+        expr: increase(external_api_requests_failed_total[10m]) > 20
+        for: 2m
+        labels:
+          severity: warning
+          component: external_apis
+        annotations:
+          summary: "External API failures high"
+          description: "{{ $value }} external API calls failed in the last 10 minutes for {{ $labels.api_name }}"
+
+      - alert: DatabaseConnectionPoolExhausted
+        expr: pg_stat_activity_count >= pg_settings_max_connections * 0.95
+        for: 2m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "Database connection pool near exhaustion"
+          description: "Database connections are at {{ $value }} out of {{ $labels.max_connections }}"
+
+  # =================================================================
+  # PERFORMANCE ALERTS
+  # =================================================================
+  - name: performance.rules
+    rules:
+      - alert: HighVectorSearchLatency
+        expr: histogram_quantile(0.95, rate(weaviate_query_duration_seconds_bucket[5m])) > 2
+        for: 3m
+        labels:
+          severity: warning
+          component: vector_search
+        annotations:
+          summary: "Vector search latency high"
+          description: "95th percentile vector search time is {{ $value }}s"
+
+      - alert: PropertyListingProcessingDelay
+        expr: histogram_quantile(0.95, rate(listing_processing_duration_seconds_bucket[10m])) > 30
+        for: 5m
+        labels:
+          severity: warning
+          component: data_pipeline
+        annotations:
+          summary: "Property listing processing delayed"
+          description: "Property listing processing time is {{ $value }}s"
+
+      - alert: CacheHitRateLow
+        expr: redis_cache_hit_rate < 0.7
+        for: 10m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Cache hit rate low"
+          description: "Redis cache hit rate is {{ $value }}, below 70% threshold"
