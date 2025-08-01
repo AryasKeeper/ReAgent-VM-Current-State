@@ -131,3 +131,4 @@ cython_debug/
 # Secrets directory (if it ever gets recreated)
 secrets/
 subagent_hooks.log
+environment_validation_report_*.json
