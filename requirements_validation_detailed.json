@@ -1,0 +1,39 @@
+{
+  "timestamp": "2025-08-01",
+  "requirements_file": "requirements.txt",
+  "total_packages": 43,
+  "risk_score": 6,
+  "status": "MEDIUM RISK - Should be addressed",
+  "issues": {
+    "security_vulnerabilities": [],
+    "deprecated_packages": [
+      {
+        "package": "psycopg2-binary",
+        "issue": "deprecated_api",
+        "severity": "MEDIUM",
+        "current_version": "2.9.9",
+        "status": "maintenance_mode",
+        "description": "psycopg2-binary is deprecated or in maintenance mode",
+        "recommendation": "psycopg[binary]>=3.1.8"
+      },
+      {
+        "package": "weaviate-client",
+        "issue": "deprecated_api",
+        "severity": "MEDIUM",
+        "current_version": "3.25.3",
+        "status": "deprecated",
+        "description": "weaviate-client is deprecated or in maintenance mode",
+        "recommendation": "weaviate-client>=4.10.0"
+      }
+    ],
+    "unpinned_packages": [],
+    "outdated_packages": [],
+    "dependency_conflicts": []
+  },
+  "warnings": [],
+  "recommendations": [
+    "MEDIUM PRIORITY: Plan migration for deprecated packages",
+    "  - Migrate psycopg2-binary to psycopg[binary]>=3.1.8",
+    "  - Migrate weaviate-client to weaviate-client>=4.10.0"
+  ]
+}

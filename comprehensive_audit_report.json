@@ -1,0 +1,299 @@
+{
+  "timestamp": "2025-08-01T10:53:31.363746",
+  "file_path": "requirements.txt",
+  "total_packages": 42,
+  "security_audit": {
+    "critical": [
+      {
+        "package": "fastapi",
+        "current_version": "0.104.1",
+        "vulnerability": {
+          "cves": [
+            "CVE-2024-24762",
+            "CVE-2024-47874"
+          ],
+          "description": "ReDoS vulnerability and Starlette security issue",
+          "severity": "CRITICAL",
+          "fixed_in": "0.115.0"
+        },
+        "recommendation": "Upgrade to fastapi>=0.115.0",
+        "urgency": "IMMEDIATE"
+      },
+      {
+        "package": "langchain",
+        "current_version": "0.3.4",
+        "vulnerability": {
+          "cves": [
+            "CVE-2023-46229",
+            "CVE-2023-44467",
+            "CVE-2024-36480"
+          ],
+          "description": "SSRF, prompt injection, and RCE vulnerabilities",
+          "severity": "CRITICAL",
+          "fixed_in": "0.3.7"
+        },
+        "recommendation": "Upgrade to langchain>=0.3.7",
+        "urgency": "IMMEDIATE"
+      }
+    ],
+    "high": [],
+    "medium": [
+      {
+        "package": "aiohttp",
+        "current_version": "3.9.1",
+        "vulnerability": {
+          "cves": [
+            "CVE-2024-23334"
+          ],
+          "description": "HTTP request smuggling vulnerability",
+          "severity": "MEDIUM",
+          "fixed_in": "3.12.0"
+        },
+        "recommendation": "Upgrade to aiohttp>=3.12.0",
+        "urgency": "HIGH"
+      }
+    ],
+    "low": [],
+    "summary": {
+      "total_issues": 3,
+      "security_score": 78,
+      "risk_level": "MEDIUM",
+      "requires_immediate_action": true
+    }
+  },
+  "performance_audit": {
+    "high_impact": [
+      {
+        "package": "httpx",
+        "current_version": "0.23.3",
+        "optimal_version": "0.27.0",
+        "performance_impact": "HIGH",
+        "improvements_available": [
+          "Connection pooling",
+          "HTTP/2 support",
+          "Async optimizations"
+        ],
+        "months_behind": 8,
+        "recommendation": "Upgrade to httpx>=0.27.0"
+      },
+      {
+        "package": "numpy",
+        "current_version": "1.25.2",
+        "optimal_version": "1.26.0",
+        "performance_impact": "HIGH",
+        "improvements_available": [
+          "SIMD optimizations",
+          "Memory layout improvements"
+        ],
+        "months_behind": 2,
+        "recommendation": "Upgrade to numpy>=1.26.0"
+      }
+    ],
+    "medium_impact": [
+      {
+        "package": "pandas",
+        "current_version": "2.1.4",
+        "optimal_version": "2.2.0",
+        "performance_impact": "MEDIUM",
+        "improvements_available": [
+          "Arrow backend",
+          "String dtype optimizations",
+          "Copy-on-write"
+        ],
+        "months_behind": 2,
+        "recommendation": "Upgrade to pandas>=2.2.0"
+      }
+    ],
+    "low_impact": [],
+    "optimizations_available": [],
+    "summary": {
+      "performance_score": 65,
+      "total_optimization_opportunities": 3,
+      "estimated_performance_gain": "15-30% performance improvement expected"
+    }
+  },
+  "maintenance_audit": {
+    "deprecated": [
+      {
+        "package": "weaviate-client",
+        "current_version": "3.25.3",
+        "status": "API_DEPRECATED",
+        "description": "v3 API deprecated, migrate to v4",
+        "migration_path": "weaviate-client>=4.10.0",
+        "urgency": "HIGH",
+        "deadline": "2025-12-31"
+      }
+    ],
+    "maintenance_mode": [
+      {
+        "package": "psycopg2-binary",
+        "current_version": "2.9.9",
+        "status": "MAINTENANCE_MODE",
+        "description": "In maintenance mode, psycopg3 recommended for new projects",
+        "migration_path": "psycopg[binary]>=3.1.8",
+        "urgency": "MEDIUM",
+        "deadline": null
+      }
+    ],
+    "actively_maintained": [],
+    "end_of_life_risk": [],
+    "summary": {
+      "maintenance_score": 70,
+      "packages_requiring_migration": 2,
+      "estimated_migration_effort": "LOW (1-2 days)"
+    }
+  },
+  "production_readiness": {
+    "missing_categories": [
+      {
+        "category": "security",
+        "coverage": 0.0,
+        "missing_packages": [
+          "passlib",
+          "cryptography"
+        ],
+        "impact": "HIGH"
+      }
+    ],
+    "present_categories": [
+      {
+        "category": "monitoring",
+        "coverage": 100.0,
+        "present_packages": [
+          "prometheus-client",
+          "sentry-sdk",
+          "structlog"
+        ]
+      },
+      {
+        "category": "async_support",
+        "coverage": 100.0,
+        "present_packages": [
+          "asyncio",
+          "asyncpg",
+          "aiohttp"
+        ]
+      },
+      {
+        "category": "caching",
+        "coverage": 100.0,
+        "present_packages": [
+          "redis",
+          "hiredis"
+        ]
+      },
+      {
+        "category": "testing",
+        "coverage": 100.0,
+        "present_packages": [
+          "pytest",
+          "pytest-asyncio",
+          "pytest-cov"
+        ]
+      },
+      {
+        "category": "data_processing",
+        "coverage": 100.0,
+        "present_packages": [
+          "pandas",
+          "numpy"
+        ]
+      },
+      {
+        "category": "web_framework",
+        "coverage": 100.0,
+        "present_packages": [
+          "fastapi",
+          "uvicorn"
+        ]
+      },
+      {
+        "category": "database",
+        "coverage": 100.0,
+        "present_packages": [
+          "sqlalchemy",
+          "alembic",
+          "psycopg2-binary"
+        ]
+      },
+      {
+        "category": "ml_ai",
+        "coverage": 100.0,
+        "present_packages": [
+          "openai",
+          "langchain",
+          "weaviate-client"
+        ]
+      },
+      {
+        "category": "task_queue",
+        "coverage": 100.0,
+        "present_packages": [
+          "celery",
+          "kombu"
+        ]
+      }
+    ],
+    "version_pinning_issues": [],
+    "deployment_blockers": [],
+    "summary": {
+      "readiness_score": 75,
+      "deployment_ready": false,
+      "critical_gaps": 1,
+      "recommended_actions": [
+        "Add security packages: passlib, cryptography"
+      ]
+    }
+  },
+  "recommendations": {
+    "immediate_actions": [
+      {
+        "action": "SECURITY FIX: Upgrade to fastapi>=0.115.0",
+        "reason": "Critical vulnerability: ReDoS vulnerability and Starlette security issue",
+        "estimated_effort": "LOW",
+        "business_impact": "CRITICAL"
+      },
+      {
+        "action": "SECURITY FIX: Upgrade to langchain>=0.3.7",
+        "reason": "Critical vulnerability: SSRF, prompt injection, and RCE vulnerabilities",
+        "estimated_effort": "LOW",
+        "business_impact": "CRITICAL"
+      }
+    ],
+    "short_term": [
+      {
+        "action": "PERFORMANCE: Upgrade to httpx>=0.27.0",
+        "reason": "Performance improvements: Connection pooling, HTTP/2 support, Async optimizations",
+        "estimated_effort": "MEDIUM",
+        "business_impact": "HIGH"
+      },
+      {
+        "action": "PERFORMANCE: Upgrade to numpy>=1.26.0",
+        "reason": "Performance improvements: SIMD optimizations, Memory layout improvements",
+        "estimated_effort": "MEDIUM",
+        "business_impact": "HIGH"
+      },
+      {
+        "action": "MIGRATION: weaviate-client>=4.10.0",
+        "reason": "API deprecated: v3 API deprecated, migrate to v4",
+        "estimated_effort": "HIGH",
+        "business_impact": "MEDIUM",
+        "deadline": "2025-12-31"
+      }
+    ],
+    "medium_term": [],
+    "long_term": [],
+    "implementation_plan": {}
+  },
+  "risk_assessment": {
+    "overall_score": 74.2,
+    "risk_level": "MEDIUM",
+    "deployment_recommendation": "REQUIRES ATTENTION before production deployment",
+    "component_scores": {
+      "security": 78,
+      "production_readiness": 75,
+      "maintenance": 70,
+      "performance": 65
+    }
+  }
+}

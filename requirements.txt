@@ -1,14 +1,14 @@
 # Core Framework
-fastapi==0.104.1
+fastapi==0.115.0
 uvicorn[standard]==0.24.0
-pydantic
-pydantic-settings~=2.7.4
+pydantic==2.9.2
+pydantic-settings==2.6.1
 
 # LangGraph Orchestration and LLM
-langgraph~=0.2.0
-langgraph-checkpoint-postgres==2.0.3
-langchain==0.3.4
-langchain-core~=0.3.12
+langgraph==0.2.20
+langgraph-checkpoint-postgres==2.0.8
+langchain==0.3.14
+langchain-core==0.3.14
 langchain-openai==0.2.2
 openai==1.54.0
 
